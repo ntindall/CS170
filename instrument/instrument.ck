@@ -3,9 +3,11 @@
 dac.channels() => int N_CHANS;
 
 NRev reverbs[N_CHANS];
+HPF h[N_CHANS];
 
 for (int i; i < N_CHANS; i++) {
-  reverbs[i] => dac.chan(i);
+  reverbs[i] => h[i] => dac.chan(i);
+  h[i].freq(50);
   reverbs[i].mix(0.05);
 }
 
@@ -28,10 +30,10 @@ fun void beep(int deltaX) {
       250::ms => now;
     }
   } else {
-    Math.max(1, s.freq() * register) => s.freq;
+    Math.max(1, s.freq() * register / Math.abs(deltaX)) => s.freq;
 
     a.keyOn();
-    1::second => now;
+    0.5::second => now;
     a.keyOff();
     250::ms => now;
   }
@@ -69,6 +71,11 @@ fun void mouse() {
                   
                   spork ~beep(msgM.deltaX);
                   125:: ms => now;
+
+                  while (hi.recv (msgM)) {
+                    //noop
+                    //clear queue
+                  }
               }
 
           }
