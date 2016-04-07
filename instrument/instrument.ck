@@ -114,12 +114,12 @@ fun void keyboard() {
           if( msg.isButtonDown() )
           {
             if (msg.which == 82) { //up
-              register + 0.5 => register;
+              register + 0.1 => register;
               <<< "[!] REGISTER CHANGE: UP" >>>;
               <<< "[!] " + register >>>;
             } 
             if (msg.which == 81) { //down
-              register - 0.5 => register;
+              register - 0.1 => register;
               <<< "[!] REGISTER CHANGE: DOWN" >>>; 
               <<< "[!] " + register >>>;
             }
