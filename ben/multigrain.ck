@@ -62,6 +62,7 @@ fun void handleMouse()
         {
             if( msg.isMouseMotion() )
             {
+                <<< msg >>>;
                 if( msg.deltaX )
                 {
                     msg.deltaX * 200 +=> position_1;
