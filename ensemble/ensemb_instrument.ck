@@ -106,6 +106,7 @@ fun LiSa load( string filename )
 
 /* PATCH */
 dac.channels() => int N_CHANS;
+<<< "Instantiating with " + N_CHANS + " channels" >>>;
 
 NRev reverbs[N_CHANS];
 HPF h[N_CHANS];
@@ -120,17 +121,22 @@ for (int i; i < N_CHANS; i++) {
 
 //todo... multichannel LiSa
 load (me.sourceDir() + "enya2.wav") @=> LiSa lisa1;
-load (me.sourceDir() + "giygas.wav") @=> LiSa lisa2;
+
+LiSa lisas[N_CHANS];
+for (int i; i < N_CHANS; i++) {
+    load (me.sourceDir() + "giygas.wav") @=> lisas[i];
+}
 
 
 fun void soundSource1() {
 //  deltaX / 2 => deltaX; //make mouse a little less sensitive
 
-  lisa1 => LPF l => PitShift p => NRev reverb => dac;
+  lisa1 => LPF l => PitShift p => NRev reverb => Gain g => dac;
 
   l.freq(20000);
 
   while (true) {
+    g.gain((gt.axis[4] + 1) /2);
     //<<<Std.fabs(gt.lastAxis[1] - gt.axis[1]) >>>;
     //have to trigger 
    // if (Std.fabs(gt.lastAxis[1] - gt.axis[1]) > 0.05) {
@@ -151,10 +157,9 @@ fun void soundSource1() {
                   100::ms,
                   GRAIN_RAMP_FACTOR * 100::ms,
                   GRAIN_RAMP_FACTOR * 100::ms,
-                  rate);
-
+                  rate);;
       if (gt.axis[0] > 0) {
-        (5 / gt.axis[0])::ms => now;
+        (5 * (gt.axis[0] * 100))::ms => now;
       } else {
         5::ms * (gt.axis[0] + 2) * 8 => now;
       }
@@ -165,9 +170,9 @@ fun void soundSource1() {
 }
 
 
-fun void soundSource2() {
+fun void soundSource2(int channel) {
 
-  lisa2 => LPF l2 => Echo e => NRev r => dac;
+  lisas[channel] => LPF l2 => Echo e => NRev r => dac.chan(channel);
 
   0 => int cur;
   0 => int numToPlay;
@@ -185,26 +190,54 @@ fun void soundSource2() {
   l2.freq(20000);
 
   while (true) {
-    (gt.axis[5] * 16) $ int => numToPlay;
+    ((gt.axis[5] * 3) * 16) $ int => numToPlay;
+    if(numToPlay > 16) {
+        16 => numToPlay;
+    }
     <<< numToPlay >>>;
-
+    
+    //synch
+    125::ms - (now % 125::ms) => now;
+    
+     2000::ms => dur total;
+      
+    
     for (int i; i < 16; i++) {
-      if (numToPlay > 0) {
-        spork ~grain(lisa2,
-              pos[permutation[i]] * lisa1.duration(),
-              10::ms,
-              GRAIN_RAMP_FACTOR * 10::ms,
-              GRAIN_RAMP_FACTOR * 10::ms,
-              1);
-        numToPlay - 1 => numToPlay;
+      (gt.axis[3] + 1) => float randomness;
+     // <<< randomness >>>;
+     
+      if (permutation[i] < numToPlay) {
+              spork ~grain(lisas[channel],
+                           pos[permutation[i]] * lisas[channel].duration(),
+                           50::ms,
+                           GRAIN_RAMP_FACTOR * 10::ms,
+                           GRAIN_RAMP_FACTOR * 10::ms,
+                           1);
       }
-      125::ms => now;
+
+      if (randomness < 0.2) {
+          total - 125::ms => total;
+          125::ms => now;
+      } else {
+          (125 + 72 * randomness * Std.rand2f(-1,1))::ms => dur randDur;
+          
+          if (randDur > total) {
+              total => now;
+              break;
+          } else {   
+              total - randDur => total;    
+              (125::ms + randDur) => now;
+          }
+      }
     }
   }
 }
 
 spork ~soundSource1();
-spork ~soundSource2();
+
+for (int i; i < N_CHANS; i++) {
+    spork ~soundSource2(i);
+}
 
 
 
@@ -377,7 +410,7 @@ fun void gametrak()
 // spork control
 spork ~ gametrak();
 // print
-spork ~ print();
+//spork ~ print();
 
 // main loop
 while( true )
