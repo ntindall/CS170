@@ -87,28 +87,30 @@ for (int i; i < N_CHANS; i++) {
 load (me.sourceDir() + "enya2.wav") @=> LiSa lisa;
 
 
-fun void beep(int deltaX) {
-  deltaX / 2 => deltaX; //make mouse a little less sensitive
+fun void beep(float xpos, float ypos) {
+//  deltaX / 2 => deltaX; //make mouse a little less sensitive
 
-  lisa => LPF l => reverbs[Math.abs(deltaX) % N_CHANS];
+  lisa => LPF l => reverbs[1];
 
   l.freq(20000);
 
   //upper bound
 //  Math.max(1, deltaX) => float rate;
   //lower bound
-  Math.min(Math.abs(deltaX), 8) * register => float rate;
+  /*
+  Math.min(Math.abs(), 8) * register => float rate;
 
   <<< rate >>>;
   Math.random2(0, 1) => float position;
+  */
 // TODO, adjust the grain parameters and fix the position... maybe map to
 // a x or y parameter to position??? random is not the best.
   grain(lisa,
-        position * lisa.duration(),
-        500::ms,
+        ((xpos + 1)/2) * lisa.duration(),
+        1000::ms,
         GRAIN_RAMP_FACTOR * 250::ms,
         GRAIN_RAMP_FACTOR * 250::ms,
-        rate);
+        2);
 }
 
 fun void mouse() {
@@ -141,8 +143,8 @@ fun void mouse() {
               if( msgM.deltaX )
               {
                   
-                spork ~beep(msgM.deltaX);
-                25::ms => now; //TODO... rate limit the sporking a bit.
+               // spork ~beep(msgM.deltaX);
+                200::ms => now; //TODO... rate limit the sporking a bit.
                                //what is the optimal value????
 
                 //TODO
@@ -205,4 +207,157 @@ fun void keyboard() {
 
 /* CONTROL */
 spork ~keyboard();
-mouse();
+spork ~mouse();
+
+
+GameTrak gt;
+
+// z axis deadzone
+.032 => float DEADZONE;
+
+// which joystick
+0 => int device;
+// get from command line
+if( me.args() ) me.arg(0) => Std.atoi => device;
+
+// data structure for gametrak
+class GameTrak
+{
+    // timestamps
+    time lastTime;
+    time currTime;
+    
+    // previous axis data
+    float lastAxis[6];
+    // current axis data
+    float axis[6];
+}
+
+
+// HID objects
+Hid trak;
+HidMsg msg;
+
+// open joystick 0, exit on fail
+if( !trak.openJoystick( device ) ) me.exit();
+
+// print
+<<< "joystick '" + trak.name() + "' ready", "" >>>;
+
+
+// print
+fun void print()
+{
+    // time loop
+    while( true )
+    {
+        // values
+        <<< "axes:", gt.axis[0],gt.axis[1],gt.axis[2], gt.axis[3],gt.axis[4],gt.axis[5] >>>;
+        // advance time
+        100::ms => now;
+    }
+}
+
+0 => int triggered;
+fun void onNewGametrakEvent()
+{       
+    gt.axis[0] - gt.lastAxis[0] => float deltaX;
+    gt.axis[1] - gt.lastAxis[1] => float deltaY;
+    <<<"delta x",deltaX>>>;
+    16 *=> deltaX;
+    16 *=> deltaY;
+    
+    
+    gt.axis[1] => float y;
+    gt.axis[0] => float x;
+    //if(0.5 < y)
+    //{
+    //    if(!triggered){
+    //        1 => triggered;
+    //        spork ~ beep(deltaX, deltaY);
+    //        //spork ~ beep2(deltaY $ int);
+    //    }
+    //}
+    //else
+    //{
+    //    0 => triggered;
+    //}
+    
+    if(1 < Math.fabs(deltaY))
+    {
+        //spork ~ beep(deltaX, deltaY);
+        spork ~ beep(x, y);
+    }
+}
+
+// gametrack handling
+fun void gametrak()
+{
+    while( true )
+    {
+        // wait on HidIn as event
+        trak => now;
+        
+        // messages received
+        while( trak.recv( msg ) )
+        {
+            // joystick axis motion
+            if( msg.isAxisMotion() )
+            {            
+                // check which
+                if( msg.which >= 0 && msg.which < 6 )
+                {
+                    // check if fresh
+                    if( now > gt.currTime )
+                    {
+                        // time stamp
+                        gt.currTime => gt.lastTime;
+                        // set
+                        now => gt.currTime;
+                    }
+                    // save last
+                    gt.axis[msg.which] => gt.lastAxis[msg.which];
+                    // the z axes map to [0,1], others map to [-1,1]
+                    if( msg.which != 2 && msg.which != 5 )
+                    { msg.axisPosition => gt.axis[msg.which]; }
+                    else
+                    {
+                        1 - ((msg.axisPosition + 1) / 2) - DEADZONE => gt.axis[msg.which];
+                        if( gt.axis[msg.which] < 0 ) 0 => gt.axis[msg.which];
+                    }
+                }
+            }
+            
+            // joystick button down
+            else if( msg.isButtonDown() )
+            {
+                <<< "button", msg.which, "down" >>>;
+            }
+            
+            // joystick button up
+            else if( msg.isButtonUp() )
+            {
+                <<< "button", msg.which, "up" >>>;
+            }
+        }
+        
+        onNewGametrakEvent();
+        125::ms => now;        
+        while (trak.recv( msg )) {
+            //clear
+        }
+        
+    }
+}
+
+
+spork ~ gametrak();
+
+
+// main loop
+while( true )
+{
+    // synchronize to display
+    100::ms => now;
+}
+
