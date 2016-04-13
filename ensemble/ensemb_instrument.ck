@@ -120,7 +120,7 @@ for (int i; i < N_CHANS; i++) {
 1 => float register;
 
 //todo... multichannel LiSa
-load (me.sourceDir() + "enya2.wav") @=> LiSa lisa1;
+load (me.sourceDir() + "sitar_mono.wav") @=> LiSa lisa1;
 
 LiSa lisas[N_CHANS];
 for (int i; i < N_CHANS; i++) {
@@ -131,12 +131,14 @@ for (int i; i < N_CHANS; i++) {
 fun void soundSource1() {
 //  deltaX / 2 => deltaX; //make mouse a little less sensitive
 
-  lisa1 => LPF l => PitShift p => NRev reverb => Gain g => dac;
+  lisa1 => LPF l => PitShift p => Gain g => Chorus c => NRev r => dac;
+  c.mix(0.05);
+  r.mix(0.05);
 
   l.freq(20000);
 
   while (true) {
-    g.gain((gt.axis[4] + 1) /2);
+    //g.gain((gt.axis[4] + 1) /2);
     //<<<Std.fabs(gt.lastAxis[1] - gt.axis[1]) >>>;
     //have to trigger 
    // if (Std.fabs(gt.lastAxis[1] - gt.axis[1]) > 0.05) {
@@ -145,18 +147,26 @@ fun void soundSource1() {
       4 => rate;
     } else if (gt.axis[1] > 0) {
       2 => rate;
-    } else if (gt.axis[1] > 0.5) {
+    } else if (gt.axis[1] > -0.5) {
       1 => rate;
     } else {
       0.5 => rate;
     }
-
+    
+    200::ms => dur grainlen;
+    if (gt.axis[0] > 0) {
+        grainlen + (gt.axis[0] * 1000)::ms => grainlen;
+        
+    }
     if (gt.axis[2] > 0) {
+        Math.min(gt.axis[2] * 2, 0.95) => float tempPos;
+        <<<"pos",tempPos>>>;
+        <<<"dur",tempPos * lisa1.duration(), lisa1.duration()>>>;
       spork ~grain(lisa1,
-                  gt.axis[2] * lisa1.duration(),
-                  100::ms,
-                  GRAIN_RAMP_FACTOR * 100::ms,
-                  GRAIN_RAMP_FACTOR * 100::ms,
+                  tempPos * lisa1.duration(),
+                  grainlen,
+                  GRAIN_RAMP_FACTOR * 250::ms,
+                  GRAIN_RAMP_FACTOR * 250::ms,
                   rate);;
       if (gt.axis[0] > 0) {
         (5 * (gt.axis[0] * 100))::ms => now;
@@ -172,7 +182,9 @@ fun void soundSource1() {
 
 fun void soundSource2(int channel) {
 
-  lisas[channel] => LPF l2 => Echo e => NRev r => dac.chan(channel);
+  lisas[channel] => LPF l2 => Echo e => NRev r => Gain g => dac.chan(channel);
+  
+  g.gain(0.6);
 
   0 => int cur;
   0 => int numToPlay;
@@ -197,9 +209,9 @@ fun void soundSource2(int channel) {
     <<< numToPlay >>>;
     
     //synch
-    125::ms - (now % 125::ms) => now;
+    250::ms - (now % 250::ms) => now;
     
-     2000::ms => dur total;
+    4000::ms => dur total;
       
     
     for (int i; i < 16; i++) {
@@ -212,21 +224,21 @@ fun void soundSource2(int channel) {
                            50::ms,
                            GRAIN_RAMP_FACTOR * 10::ms,
                            GRAIN_RAMP_FACTOR * 10::ms,
-                           1);
+                           Std.rand2f(0.5,i/8.0));
       }
 
       if (randomness < 0.2) {
-          total - 125::ms => total;
-          125::ms => now;
+          total - 250::ms => total;
+          250::ms => now;
       } else {
-          (125 + 72 * randomness * Std.rand2f(-1,1))::ms => dur randDur;
+          (250 + 120 * randomness * Std.rand2f(-1,1))::ms => dur randDur;
           
           if (randDur > total) {
               total => now;
               break;
           } else {   
               total - randDur => total;    
-              (125::ms + randDur) => now;
+              (250::ms + randDur) => now;
           }
       }
     }
