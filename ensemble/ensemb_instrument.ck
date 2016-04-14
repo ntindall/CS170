@@ -206,7 +206,7 @@ fun void soundSource2(int channel) {
     if(numToPlay > 16) {
         16 => numToPlay;
     }
-    <<< numToPlay >>>;
+    //<<< numToPlay >>>;
     
     //synch
     250::ms - (now % 250::ms) => now;
