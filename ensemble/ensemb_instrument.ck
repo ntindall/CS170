@@ -132,8 +132,8 @@ fun void soundSource1() {
 //  deltaX / 2 => deltaX; //make mouse a little less sensitive
 
   lisa1 => LPF l => PitShift p => Gain g => Chorus c => NRev r => dac;
-  c.mix(0.05);
-  r.mix(0.05);
+  c.mix(0.2);
+  r.mix(0.1);
 
   l.freq(20000);
 
@@ -167,7 +167,7 @@ fun void soundSource1() {
                   grainlen,
                   GRAIN_RAMP_FACTOR * 250::ms,
                   GRAIN_RAMP_FACTOR * 250::ms,
-                  rate);;
+                  rate * register);;
       if (gt.axis[0] > 0) {
         (5 * (gt.axis[0] * 100))::ms => now;
       } else {
