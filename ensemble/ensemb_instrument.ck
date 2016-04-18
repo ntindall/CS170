@@ -300,6 +300,31 @@ fun void mouse() {
   }
 }
 
+
+fun void changeRegister(int which) {
+  which - 30 + 1 => int registerInt;
+  
+  registerInt / 10.0 => float newRegisterFloat;
+  
+  if (registerInt == 9) {
+    1.6 => newRegisterFloat;   
+  }
+  <<< "[!] REGISTER CHANGE" >>>;
+  <<< "[!] " + newRegisterFloat >>>;
+  
+  1::second => dur glideTime;
+  100 => int numSteps;
+  (newRegisterFloat - register) / 100 => float delta;
+  <<< delta >>>;
+  
+  <<< "[!][!] Beginning glide" >>>;
+  for (int i; i < numSteps; i++) {
+      register + delta => register;
+      glideTime / numSteps => now;    
+  }
+  <<< "DONE!" >>>;
+}
+
 fun void keyboard() {
   // the device number to open
   0 => int deviceNum;
@@ -326,16 +351,10 @@ fun void keyboard() {
           // check for action type
           if( msg.isButtonDown() )
           {
-            if (msg.which == 82) { //up
-              register + 0.1 => register;
-              <<< "[!] REGISTER CHANGE: UP" >>>;
-              <<< "[!] " + register >>>;
-            } 
-            if (msg.which == 81) { //down
-              register - 0.1 => register;
-              <<< "[!] REGISTER CHANGE: DOWN" >>>; 
-              <<< "[!] " + register >>>;
-            }
+              //1 through 9 control register
+              if (msg.which >= 30 && msg.which <= 38) { 
+                spork ~ changeRegister(msg.which);  
+              }
           }
           else
           {
