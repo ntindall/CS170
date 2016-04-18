@@ -118,7 +118,7 @@ for (int i; i < N_CHANS; i++) {
 }
 
 1 => float register;
-1 => float gain;
+0 => float instrument_gain;
 
 //todo... multichannel LiSa
 load (me.sourceDir() + "sitar_mono.wav") @=> LiSa lisa1;
@@ -139,7 +139,7 @@ fun void soundSource1() {
   l.freq(20000);
 
   while (true) {
-      g.gain(gain);
+      g.gain(instrument_gain);
     //g.gain((gt.axis[4] + 1) /2);
     //<<<Std.fabs(gt.lastAxis[1] - gt.axis[1]) >>>;
     //have to trigger 
@@ -256,14 +256,14 @@ for (int i; i < N_CHANS; i++) {
 fun void rampGainTo(float newGain)
 {
     Envelope e => blackhole;
-    e.value(gain);
+    e.value(instrument_gain);
     e.target(newGain);
     e.time(1.0);
     
     while(e.value() != newGain)
     {
-        e.value() => gain;
-        10::ms => now;
+        e.value() => instrument_gain;
+        1::ms => now;
     }
 }
 
