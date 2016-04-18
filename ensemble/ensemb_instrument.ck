@@ -265,6 +265,7 @@ fun void rampGainTo(float newGain)
         e.value() => instrument_gain;
         1::ms => now;
     }
+    newGain => gain;
 }
 
 
