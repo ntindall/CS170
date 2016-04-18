@@ -118,6 +118,7 @@ for (int i; i < N_CHANS; i++) {
 }
 
 1 => float register;
+1 => float gain;
 
 //todo... multichannel LiSa
 load (me.sourceDir() + "sitar_mono.wav") @=> LiSa lisa1;
@@ -138,6 +139,7 @@ fun void soundSource1() {
   l.freq(20000);
 
   while (true) {
+      g.gain(gain);
     //g.gain((gt.axis[4] + 1) /2);
     //<<<Std.fabs(gt.lastAxis[1] - gt.axis[1]) >>>;
     //have to trigger 
@@ -251,6 +253,19 @@ for (int i; i < N_CHANS; i++) {
     spork ~soundSource2(i);
 }
 
+fun void rampGainTo(float newGain)
+{
+    Envelope e => blackhole;
+    e.value(gain);
+    e.target(newGain);
+    e.time(1.0);
+    
+    while(e.value() != newGain)
+    {
+        e.value() => gain;
+        10::ms => now;
+    }
+}
 
 
 
@@ -355,11 +370,30 @@ fun void keyboard() {
               if (msg.which >= 30 && msg.which <= 38) { 
                 spork ~ changeRegister(msg.which);  
               }
+              //20 26 8 21 qwer
+              
+              //Volume controls
+              if (msg.which == 20) { //"q" = Volume silence
+                  spork ~ rampGainTo(0.0);
+                  <<< "VOLUME SILENCE" >>>;
+              }
+              if (msg.which == 26) { //"w" = Volume low
+                  spork ~ rampGainTo(0.35);
+                  <<< "VOLUME LOW" >>>;
+              }
+              if (msg.which == 8) { //"e" = Volume med
+                  spork ~ rampGainTo(0.65);
+                  <<< "VOLUME MED" >>>;
+              }
+              if (msg.which == 21) { //"r" = Volume max
+                  spork ~ rampGainTo(1.0);
+                  <<< "VOLUME MAX" >>>;
+              }
           }
           else
           {
               // print
-              // <<< "up:", msg.which >>>;
+              //<<< "up:", msg.which >>>;
           }
       }
   }
