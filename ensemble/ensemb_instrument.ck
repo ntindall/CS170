@@ -162,7 +162,7 @@ fun void soundSource1() {
     }
     if (gt.axis[2] > 0) {
         Math.min(gt.axis[2] * 2, 0.95) => float tempPos;
-        <<<"pos",tempPos>>>;
+        <<< "POS: " + tempPos * 100 +" GAIN: " + instrument_gain + " REG: " + register >>>;
         //<<<"dur",tempPos * lisa1.duration(), lisa1.duration()>>>;
       spork ~grain(lisa1,
                   tempPos * lisa1.duration(),
