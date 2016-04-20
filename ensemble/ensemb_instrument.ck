@@ -379,7 +379,7 @@ fun void keyboard() {
                   <<< "VOLUME SILENCE" >>>;
               }
               if (msg.which == 26) { //"w" = Volume low
-                  spork ~ rampGainTo(0.35);
+                  spork ~ rampGainTo(0.15);
                   <<< "VOLUME LOW" >>>;
               }
               if (msg.which == 8) { //"e" = Volume med
