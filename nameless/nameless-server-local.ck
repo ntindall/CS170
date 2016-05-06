@@ -120,19 +120,41 @@ fun void receiver()
       positions[id].x + dX => positions[id].x;
 
       //x bounds
-      if (positions[id].x > width - 1) width - 1 => positions[id].x;
-      if (positions[id].x < 0) 0 => positions[id].x;
+      if (positions[id].x > width - 1) 0 => positions[id].x;
+      if (positions[id].x < 0) width - 1 => positions[id].x;
 
       //get y
       positions[id].y + dY => positions[id].y;
 
       //y bounds
-      if (positions[id].y > height - 1) height - 1 => positions[id].y;
-      if (positions[id].y < 0) 0 => positions[id].y;
+      if (positions[id].y > height - 1) 0 => positions[id].y;
+      if (positions[id].y < 0) height - 1 => positions[id].y;
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
     }
   }
+}
+
+fun RGB avgNeighbors(int x, int y, RGB @ cel) {
+  RGB average;
+  cel.who @=> average.who;
+
+  for (-1 => int i; i <= 1; i++)
+  {
+    for (-1 => int j; j <= 1; j++)
+    {
+      if ((i == j) && (i == 0)) continue;
+      if ((x + i < 0) || (x + i > width - 1)) continue;
+      if ((y + j < 0) || (y + j > height - 1)) continue;
+
+      <<< x + i, y + j >>>;
+
+      //okay, safe to index now.
+
+    }
+  }
+
+  return average;
 }
 
 fun void gridEvolution()
@@ -149,6 +171,7 @@ fun void gridEvolution()
         y*width + x => int idx;
 
         if (grid[idx].isOccupied()) {
+          avgNeighbors(x, y, grid[idx]) @=> grid[idx];
 
         }
       }
