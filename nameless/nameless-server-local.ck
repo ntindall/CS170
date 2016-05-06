@@ -33,7 +33,7 @@ class Point {
 }
 
 fun void printRGB(RGB @ var) {
-  <<< "r:", var.r, " g: ", var.g, " b: ", var.b >>>;
+  <<< "r:", var.r, " g: ", var.g, " b: ", var.b, " o: ", var.isOccupied()>>>;
 }
 
 fun void printPoint(int id, Point @ pos) {
@@ -53,11 +53,12 @@ fun void server()
           {  
               positions[z] @=> Point curPos; 
               printPoint(z, curPos);
-             // printRGB(grid[curPos.y*width+curPos.x]);
+              printRGB(grid[curPos.y*width+curPos.x]);
+
 
               // start the message...
               //id r g b
-              xmit[z].startMsg( "/slork/synch/grid", "i i i i" );
+              xmit[z].startMsg( "/slork/synch/synth", "i i i i" );
 
               // a message is kicked as soon as it is complete 
               // - type string is satisfied and bundles are closed
@@ -97,9 +98,10 @@ fun void receiver()
       oe.getInt() => int id;
       oe.getInt() => int dX;
       oe.getInt() => int dY;
-      <<< id >>>;
 
-      //get x
+      //unset occupied for old position
+      0 => grid[positions[id].y*width+positions[id].x].who[id];
+
       positions[id].x + dX => positions[id].x;
 
       //x bounds
@@ -113,10 +115,9 @@ fun void receiver()
       if (positions[id].y > height - 1) height - 1 => positions[id].y;
       if (positions[id].y < 0) 0 => positions[id].y;
 
-
+      1 => grid[positions[id].y*width+positions[id].x].who[id];
     }
   }
-
 }
 
 spork ~server();
