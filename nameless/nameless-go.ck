@@ -22,7 +22,7 @@ fun void network()
   recv.listen();
 
   // create an address in the receiver, store in new variable
-  recv.event( "/slork/synch/grid, i i i i" ) @=> OscEvent oe;
+  recv.event( "/slork/synch/synth, i i i i" ) @=> OscEvent oe;
 
   // count
   0 => int count;

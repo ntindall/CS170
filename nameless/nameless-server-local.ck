@@ -17,8 +17,8 @@ xmit[0].setHost ( "localhost", port );
 10 => int width;
 
 
-//zero initialized
-RGB grid[height*width];
+//zero initialized, heap memory
+new RGB[height*width] @=> RGB @ grid[];
 
 //The location of each target
 Point positions[targets];
@@ -40,6 +40,23 @@ fun void printPoint(int id, Point @ pos) {
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
 
+fun void init()
+{
+  for( 0 => y; y < height; y++ ) 
+  {
+    for( 0 => x; x < width; x++ ) 
+    {
+      //calculate index
+      y*width + x => int idx;
+
+      Math.random2(0,255) => grid[idx].r;
+      Math.random2(0,255) => grid[idx].g;
+      Math.random2(0,255) => grid[idx].b;
+
+    }
+  }
+}
+
 fun void server()
 {
   // infinite time loop
@@ -55,7 +72,6 @@ fun void server()
               printPoint(z, curPos);
               printRGB(grid[curPos.y*width+curPos.x]);
 
-
               // start the message...
               //id r g b
               xmit[z].startMsg( "/slork/synch/synth", "i i i i" );
@@ -66,7 +82,6 @@ fun void server()
               grid[curPos.y*width+curPos.x].r => xmit[z].addInt;
               grid[curPos.y*width+curPos.x].g => xmit[z].addInt;
               grid[curPos.y*width+curPos.x].b => xmit[z].addInt;
-
           }
 
           // advance time
@@ -120,5 +135,33 @@ fun void receiver()
   }
 }
 
+fun void gridEvolution()
+{
+  while ( true ) 
+  {
+
+    new RGB[height*width] @=> RGB @ nextGrid[];
+    for( 0 => y; y < height; y++ ) 
+    {
+      for( 0 => x; x < width; x++ ) 
+      {
+        //calculate index
+        y*width + x => int idx;
+
+        if (grid[idx].isOccupied()) {
+
+        }
+      }
+    }
+
+    //evolution time
+    1::second => now;
+  }
+}
+
+
+//control
+init();
 spork ~server();
-receiver();
+spork ~receiver();
+gridEvolution();
