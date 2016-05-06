@@ -1,3 +1,4 @@
+
 // value of 8th
 4096::samp => dur T;
 
@@ -15,15 +16,28 @@ xmit[0].setHost ( "localhost", port );
 4 => int height;
 8 => int width;
 
-// strengths
-[ 1.0, 0.5, 0.8, 0.4, 0.9, 0.6, 0.6, 0.5,
-  0.7, 0.4, 0.8, 0.6, 0.9, 0.5, 0.5, 0.9,
-  0.9, 0.5, 0.6, 0.5, 0.8, 0.6, 0.8, 0.5,
-  0.5, 0.5, 0.8, 0.5, 1.0, 0.8, 0.5, 0.5 ] @=> float mygains[];
+//zero initialized
+RGB grid[32];
+
+//The location of each target
+Point positions[targets];
 
 int x;
 int y;
 int z;
+
+class Point {
+    int x;
+    int y;
+}
+
+fun void printRGB(RGB @ var) {
+  <<< "r:", var.r, " g: ", var.g, " b: ", var.b >>>;
+}
+
+fun void printPoint(int id, Point @ pos) {
+    <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
+}
 
 // infinite time loop
 while( true ) 
@@ -33,13 +47,22 @@ while( true )
     for( 0 => x; x < width; x++ ) 
     {
         for( 0 => z; z < targets; z++ ) 
-        {
+        {  
+            positions[z] @=> Point curPos; 
+            printPoint(z, curPos);
+            printRGB(grid[curPos.y*width+curPos.x]);
+
             // start the message...
-            xmit[z].startMsg( "/slork/synch/grid", "f" );
+            //id r g b
+            xmit[z].startMsg( "/slork/synch/grid", "i i i i" );
 
             // a message is kicked as soon as it is complete 
             // - type string is satisfied and bundles are closed
-            mygains[y*width+x] => xmit[z].addFloat;
+            z                               => xmit[z].addInt;
+            grid[curPos.y*width+curPos.x].r => xmit[z].addInt;
+            grid[curPos.y*width+curPos.x].g => xmit[z].addInt;
+            grid[curPos.y*width+curPos.x].b => xmit[z].addInt;
+
         }
 
         // advance time

@@ -1,7 +1,6 @@
 //name: nameless-go.ck
 //Nathan james Tindall
 
-
 // print
 <<< "-----------------", "" >>>;
 <<< "nameless - v0.0", "" >>>;
@@ -9,7 +8,8 @@
 // print channels
 <<< "* channels:", dac.channels() >>>;
 
-
+//instantiated by first/subsequent server message
+int id;
 
 // receiver
 fun void network()
@@ -22,11 +22,13 @@ fun void network()
   recv.listen();
 
   // create an address in the receiver, store in new variable
-  recv.event( "/slork/synch/grid, f" ) @=> OscEvent oe;
+  recv.event( "/slork/synch/grid, i i i i" ) @=> OscEvent oe;
 
   // count
   0 => int count;
-  float gain;
+  int r;
+  int g;
+  int b;
 
   // infinite event loop
   while ( true )
@@ -43,9 +45,12 @@ fun void network()
       while( oe.nextMsg() != 0 )
        {
         // get gain
-        oe.getFloat() => gain;
+        oe.getInt() => id;
+        oe.getInt() => r;
+        oe.getInt() => g;
+        oe.getInt() => b;
 
-        <<< gain >>>;
+        <<< r,g,b >>>;
       }
   }
 }
