@@ -154,12 +154,19 @@ fun RGB avgNeighbors(int x, int y, RGB @ cel) {
       if (neighY > height - 1) 0 => neighY;
       if (neighY < 0) height - 1 => neighY;
 
-      <<< neighX, neighY >>>;
+      neighY * width + neighX => int idx;
 
+      grid[idx].r +=> average.r;
+      grid[idx].g +=> average.g;
+      grid[idx].b +=> average.b;
       //okay, safe to index now.
 
     }
   }
+
+  average.r / 8 => average.r;
+  average.g / 8 => average.g;
+  average.b / 8 => average.b;
 
   return average;
 }
