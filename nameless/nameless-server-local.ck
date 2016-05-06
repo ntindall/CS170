@@ -144,10 +144,17 @@ fun RGB avgNeighbors(int x, int y, RGB @ cel) {
     for (-1 => int j; j <= 1; j++)
     {
       if ((i == j) && (i == 0)) continue;
-      if ((x + i < 0) || (x + i > width - 1)) continue;
-      if ((y + j < 0) || (y + j > height - 1)) continue;
 
-      <<< x + i, y + j >>>;
+      x + i => int neighX;
+      y + j => int neighY;
+
+      if (neighX > width - 1) 0 => neighX;
+      if (neighX < 0) width - 1 => neighX;
+
+      if (neighY > height - 1) 0 => neighY;
+      if (neighY < 0) height - 1 => neighY;
+
+      <<< neighX, neighY >>>;
 
       //okay, safe to index now.
 
