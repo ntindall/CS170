@@ -11,6 +11,10 @@
 //instantiated by first/subsequent server message
 int id;
 
+int r;
+int g;
+int b;
+
 // receiver
 fun void network()
 {
@@ -26,9 +30,6 @@ fun void network()
 
   // count
   0 => int count;
-  int r;
-  int g;
-  int b;
 
   // infinite event loop
   while ( true )
@@ -92,10 +93,11 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
+        spork ~sound ();
         // a message is kicked as soon as it is complete 
         // - type string is satisfied and bundles are closed
         xmit.startMsg("/slork/synch/move", "i i i");
-        0 => xmit.addInt;
+        id => xmit.addInt;
 
         //up
         if (msg.which == 82) 
@@ -127,5 +129,24 @@ fun void client()
   }
 }
 
+fun void sound()
+{
+  SinOsc rOsc => ADSR a => dac;
+  SinOsc gOsc => a;
+  SinOsc bOsc => a;
+
+  a.set(5::second, 2::second, 0.1, 3::second);
+  <<< r, g, b >>>;
+  rOsc.freq(Std.mtof(r));
+  gOsc.freq(Std.mtof(g));
+  bOsc.freq(Std.mtof(b));
+
+  a.keyOn();
+  10::second => now;
+  a.keyOff();
+  5::second => now;
+}
+
 spork ~network();
+spork ~sound();
 client();

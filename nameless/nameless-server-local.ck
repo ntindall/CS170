@@ -15,7 +15,10 @@ xmit[0].setHost ( "localhost", port );
 // dimensions
 10 => int height;
 10 => int width;
-
+string gridString;
+for (int i; i < height * width; i++) {
+  "i " +=> gridString;
+}
 
 //zero initialized, heap memory
 new RGB[height*width] @=> RGB @ grid[];
@@ -49,12 +52,37 @@ fun void init()
       //calculate index
       y*width + x => int idx;
 
-      Math.random2(0,255) => grid[idx].r;
-      Math.random2(0,255) => grid[idx].g;
-      Math.random2(0,255) => grid[idx].b;
+      Math.random2(20,90) => grid[idx].r;
+      Math.random2(20,90) => grid[idx].g;
+      Math.random2(20,90) => grid[idx].b;
 
     }
   }
+}
+
+string cache;
+fun string printGrid() {
+
+  "----------------------------\n" => string result;
+  for( 0 => y; y < height; y++ ) 
+  {
+    for( 0 => x; x < width; x++ ) 
+    {
+      //calculate index
+      y*width + x => int idx;
+
+      if (grid[idx].isOccupied()) {
+        "1  " +=> result;
+      } else {
+        "0  " +=> result;
+      }
+    }
+    "\n" +=> result;
+  }
+
+  result => cache;
+
+  return result;
 }
 
 fun void server()
@@ -69,8 +97,8 @@ fun void server()
           for( 0 => z; z < targets; z++ ) 
           {  
               positions[z] @=> Point curPos; 
-              printPoint(z, curPos);
-              printRGB(grid[curPos.y*width+curPos.x]);
+              //printPoint(z, curPos);
+              //printRGB(grid[curPos.y*width+curPos.x]);
 
               // start the message...
               //id r g b
@@ -82,6 +110,7 @@ fun void server()
               grid[curPos.y*width+curPos.x].r => xmit[z].addInt;
               grid[curPos.y*width+curPos.x].g => xmit[z].addInt;
               grid[curPos.y*width+curPos.x].b => xmit[z].addInt;
+
           }
 
           // advance time
@@ -175,6 +204,8 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
+    printGrid();
+    <<< cache >>>;
 
     new RGB[height*width] @=> RGB @ nextGrid[];
     for( 0 => y; y < height; y++ ) 
