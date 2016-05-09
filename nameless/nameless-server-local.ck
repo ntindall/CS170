@@ -13,8 +13,8 @@ OscSend xmit[16];
 xmit[0].setHost ( "localhost", port );
 
 // dimensions
-10 => int height;
-10 => int width;
+5 => int height;
+5 => int width;
 string gridString;
 for (int i; i < height * width; i++) {
   "i " +=> gridString;
@@ -43,6 +43,8 @@ fun void printPoint(int id, Point @ pos) {
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
 
+[55,57,60,62,64] @=> int scale[];
+
 fun void init()
 {
   for( 0 => y; y < height; y++ ) 
@@ -52,9 +54,14 @@ fun void init()
       //calculate index
       y*width + x => int idx;
 
-      Math.random2(20,90) => grid[idx].r;
-      Math.random2(20,90) => grid[idx].g;
-      Math.random2(20,90) => grid[idx].b;
+      Math.random2(0,scale.cap() - 1) => int which;
+      scale[which] + (Math.random2(0,2) * 12) => grid[idx].r;
+
+      Math.random2(0,scale.cap() - 1) => which;
+      scale[which] + (Math.random2(0,2) * 12) => grid[idx].g;
+
+      Math.random2(0,scale.cap() - 1) => which;
+      scale[which] + (Math.random2(0,2) * 12) => grid[idx].b;
 
     }
   }
@@ -80,7 +87,7 @@ fun string printGrid() {
     "\n" +=> result;
   }
 
-  result => cache;
+  result @=> cache;
 
   return result;
 }
@@ -204,8 +211,7 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
-    printGrid();
-    <<< cache >>>;
+    <<< printGrid() >>>;
 
     new RGB[height*width] @=> RGB @ nextGrid[];
     for( 0 => y; y < height; y++ ) 
@@ -215,12 +221,25 @@ fun void gridEvolution()
         //calculate index
         y*width + x => int idx;
 
-        if (grid[idx].isOccupied()) {
+        if (now % 20::second == 0::second && grid[idx].isOccupied()) {
+          <<< "[!]\n[!]\n[!]\n" >>>;
+          <<< "Terraforming!!!" >>>;
+
           avgNeighbors(x, y, grid[idx]) @=> grid[idx];
+
+          <<< "[!]\n[!]\n[!]\n" >>>;
 
         }
       }
     }
+
+    //xmit
+   for( 0 => z; z < targets; z++ ) 
+   {  
+      xmit[z].startMsg( "/slork/io/grid", "s" );
+      cache                              => xmit[z].addString;
+
+   }
 
     //evolution time
     1::second => now;

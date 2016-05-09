@@ -27,6 +27,7 @@ fun void network()
 
   // create an address in the receiver, store in new variable
   recv.event( "/slork/synch/synth, i i i i" ) @=> OscEvent oe;
+  recv.event( "/slork/io/grid, s") @=> OscEvent ge;
 
   // count
   0 => int count;
@@ -52,6 +53,14 @@ fun void network()
         oe.getInt() => b;
 
        // <<< r,g,b >>>;
+      }
+
+      // grab the next message from the queue. 
+      while( ge.nextMsg() != 0 )
+      {
+        // get gain
+        ge.getString() => string grid;
+        <<< grid >>>;
       }
   }
 }
@@ -93,60 +102,63 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
-        spork ~sound ();
         // a message is kicked as soon as it is complete 
         // - type string is satisfied and bundles are closed
         xmit.startMsg("/slork/synch/move", "i i i");
         id => xmit.addInt;
 
         //up
-        if (msg.which == 82) 
+        if (msg.which >= 79 && msg.which <= 82)
         {
-          1 => xmit.addInt;
-          0 => xmit.addInt;
-        }
-        //down
-        if (msg.which == 81) 
-        {
-          -1 => xmit.addInt;
-          0  => xmit.addInt;
-        }
-        //left
-        if (msg.which == 80) 
-        {          
-          0 => xmit.addInt;
-          -1  => xmit.addInt;
+          spork ~drone ();
 
-        }
-        //right
-        if (msg.which == 79)
-        {
-          0 => xmit.addInt;
-          1  => xmit.addInt;
+          if (msg.which == 82) 
+          {
+            1 => xmit.addInt;
+            0 => xmit.addInt;
+          }
+          //down
+          if (msg.which == 81) 
+          {
+            -1 => xmit.addInt;
+            0  => xmit.addInt;
+          }
+          //left
+          if (msg.which == 80) 
+          {          
+            0 => xmit.addInt;
+            -1  => xmit.addInt;
+
+          }
+          //right
+          if (msg.which == 79)
+          {
+            0 => xmit.addInt;
+            1  => xmit.addInt;
+          }
         }
       }
     }
   }
 }
 
-fun void sound()
+fun void drone()
 {
   SinOsc rOsc => ADSR a => dac;
   SinOsc gOsc => a;
   SinOsc bOsc => a;
 
-  a.set(5::second, 2::second, 0.1, 3::second);
+  a.set(2.5::second, 1::second, 0.1, 1.5::second);
   <<< r, g, b >>>;
   rOsc.freq(Std.mtof(r));
   gOsc.freq(Std.mtof(g));
   bOsc.freq(Std.mtof(b));
 
   a.keyOn();
-  10::second => now;
+  5::second => now;
   a.keyOff();
   5::second => now;
 }
 
 spork ~network();
-spork ~sound();
 client();
