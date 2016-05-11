@@ -46,9 +46,16 @@ fun void network()
       // grab the next message from the queue. 
       while( oe.nextMsg() != 0 )
       {
+
+        r => int old_r;
         // get gain
         oe.getInt() => id;
         oe.getInt() => r;
+
+        if (r != old_r) {
+          spork ~drone();
+        }
+
         oe.getInt() => g;
         oe.getInt() => b;
 
@@ -107,10 +114,14 @@ fun void client()
         xmit.startMsg("/slork/synch/move", "i i i");
         id => xmit.addInt;
 
+        if (msg.which == 7) {
+          //rearticulate drone
+          spork ~drone();
+        }
+
         //up
         if (msg.which >= 79 && msg.which <= 82)
         {
-          spork ~drone ();
 
           if (msg.which == 82) 
           {
@@ -144,20 +155,27 @@ fun void client()
 
 fun void drone()
 {
-  SinOsc rOsc => ADSR a => dac;
-  SinOsc gOsc => a;
-  SinOsc bOsc => a;
+  BeeThree rOsc => ADSR a => LPF l => dac;
+  l.freq(300);
+  rOsc.lfoSpeed(1);
+  rOsc.lfoDepth(0.01);
+  rOsc.controlOne(1);
+ // SinOsc gOsc => a;
+ // SinOsc bOsc => a;
 
-  a.set(2.5::second, 1::second, 0.1, 1.5::second);
+  1 => rOsc.noteOn;
+  a.set(5::second, 5::second, 0.1, 5::second);
   <<< r, g, b >>>;
   rOsc.freq(Std.mtof(r));
-  gOsc.freq(Std.mtof(g));
-  bOsc.freq(Std.mtof(b));
+  //gOsc.freq(Std.mtof(g));
+  //bOsc.freq(Std.mtof(b));
 
   a.keyOn();
-  5::second => now;
+  10::second => now;
   a.keyOff();
   5::second => now;
+
+  1 => rOsc.noteOff;
 }
 
 spork ~network();

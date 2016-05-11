@@ -13,8 +13,8 @@ OscSend xmit[16];
 xmit[0].setHost ( "localhost", port );
 
 // dimensions
-5 => int height;
-5 => int width;
+10 => int height;
+10 => int width;
 string gridString;
 for (int i; i < height * width; i++) {
   "i " +=> gridString;
@@ -43,7 +43,7 @@ fun void printPoint(int id, Point @ pos) {
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
 
-[55,57,60,62,64] @=> int scale[];
+[60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12,66-12,70-12] @=> int scale[];
 
 fun void init()
 {
@@ -54,14 +54,15 @@ fun void init()
       //calculate index
       y*width + x => int idx;
 
-      Math.random2(0,scale.cap() - 1) => int which;
-      scale[which] + (Math.random2(0,2) * 12) => grid[idx].r;
+      scale[x] + y * 12 => grid[idx].r;
 
+      /*
       Math.random2(0,scale.cap() - 1) => which;
       scale[which] + (Math.random2(0,2) * 12) => grid[idx].g;
 
       Math.random2(0,scale.cap() - 1) => which;
       scale[which] + (Math.random2(0,2) * 12) => grid[idx].b;
+      */
 
     }
   }
@@ -71,7 +72,7 @@ string cache;
 fun string printGrid() {
 
   "----------------------------\n" => string result;
-  for( 0 => y; y < height; y++ ) 
+  for( height - 1 => y; y >= 0; y--) 
   {
     for( 0 => x; x < width; x++ ) 
     {
@@ -147,8 +148,8 @@ fun void receiver()
     while ( oe.nextMsg() != 0 )
     {
       oe.getInt() => int id;
-      oe.getInt() => int dX;
       oe.getInt() => int dY;
+      oe.getInt() => int dX;
 
       //unset occupied for old position
       0 => grid[positions[id].y*width+positions[id].x].who[id];
@@ -225,7 +226,7 @@ fun void gridEvolution()
           <<< "[!]\n[!]\n[!]\n" >>>;
           <<< "Terraforming!!!" >>>;
 
-          avgNeighbors(x, y, grid[idx]) @=> grid[idx];
+         // avgNeighbors(x, y, grid[idx]) @=> grid[idx];
 
           <<< "[!]\n[!]\n[!]\n" >>>;
 
@@ -242,7 +243,7 @@ fun void gridEvolution()
    }
 
     //evolution time
-    1::second => now;
+    100::ms => now;
   }
 }
 
