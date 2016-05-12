@@ -12,6 +12,20 @@ OscSend xmit[16];
 // aim the transmitter at port
 xmit[0].setHost ( "localhost", port );
 
+
+// -------------
+// graphics init
+// -------------
+// send objects
+OscSend graphicsXmit;
+// port
+4242 => int graphicsPort;
+
+// aim the transmitter at port
+graphicsXmit.setHost ( "localhost", graphicsPort ); 
+
+// -------------
+
 // dimensions
 10 => int height;
 10 => int width;
@@ -154,6 +168,7 @@ fun void receiver()
       //unset occupied for old position
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
+      //get x
       positions[id].x + dX => positions[id].x;
 
       //x bounds
@@ -168,8 +183,17 @@ fun void receiver()
       if (positions[id].y < 0) height - 1 => positions[id].y;
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
+
+      updateGraphics(id, positions[id].x, positions[id].y);
     }
   }
+}
+
+fun void updateGraphics(int id, int x, int y) {
+  graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
+  id => graphicsXmit.addInt;
+  x => graphicsXmit.addInt;
+  y => graphicsXmit.addInt;
 }
 
 fun RGB avgNeighbors(int x, int y, RGB @ cel) {
@@ -246,7 +270,6 @@ fun void gridEvolution()
     100::ms => now;
   }
 }
-
 
 //control
 init();
