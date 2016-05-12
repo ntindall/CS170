@@ -1,8 +1,10 @@
 To run server:
 
 chuck run-nameless-server.ck:(local)
+processing-java --sketch=`pwd`/world --run
 
-if local is not specified, initializes as listed in the source.
+dependencies: oscP5 and Ani (move folders to processing's sketchbook)
+if local is not specified, initializes clients as listed in the source.
 
 --------------------------------------------------------------------------------
 
