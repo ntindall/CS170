@@ -81,13 +81,32 @@ class Point {
 
 /*********************************************************** Driver Functions */
 
-fun void printRGB(RGB @ var) {
+fun void printRGB(RGB @ var) 
+{
   <<< "r:", var.r, " g: ", var.g, " b: ", var.b, " o: ", var.isOccupied()>>>;
 }
 
-fun void printPoint(int id, Point @ pos) {
+fun void printPoint(int id, Point @ pos) 
+{
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
+
+fun RGB[] deepCopy (RGB @ g[])
+{
+  new RGB[height*width] @=> RGB @ next[];
+  for( 0 => y; y < height; y++ ) 
+  {
+    for( 0 => x; x < width; x++ ) 
+    {
+      y*width + x => int idx;
+
+      g[idx] @=> next[idx];
+    }
+  }
+
+  return next;
+}
+
 
 [60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12,66-12,70-12] @=> int scale[];
 
@@ -157,8 +176,8 @@ fun void server()
           for( 0 => z; z < targets; z++ ) 
           {  
               positions[z] @=> Point curPos; 
-              //printPoint(z, curPos);
-              //printRGB(grid[curPos.y*width+curPos.x]);
+              printPoint(z, curPos);
+              printRGB(grid[curPos.y*width+curPos.x]);
 
               // start the message...
               //id r g b
@@ -274,9 +293,9 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
-    <<< printGrid(-1) >>>;
+    //<<< printGrid(-1) >>>;
 
-    new RGB[height*width] @=> RGB @ nextGrid[];
+    deepCopy(grid) @=> RGB @ nextGrid[];
 
     0 => int mutatedGrid;
     for( 0 => y; y < height; y++ ) 
@@ -290,7 +309,10 @@ fun void gridEvolution()
           <<< "[!]\n[!]\n[!]\n" >>>;
           <<< "Terraforming!!!" >>>;
 
-          //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
+          //important note... if grid cell changes while someone is on it, they
+          //will be notified IMMEDIATELY and could potentially spork/create
+          //sound (as they normally would upon a position / pitch change)
+          avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
           1 => mutatedGrid;
 
           <<< "[!]\n[!]\n[!]\n" >>>;
@@ -299,7 +321,7 @@ fun void gridEvolution()
       }
     }
 
-    if (mutatedGrid) nextGrid @=> grid;
+    if (mutatedGrid == 1) nextGrid @=> grid;
 
     //xmit
    for( 0 => z; z < targets; z++ ) 
