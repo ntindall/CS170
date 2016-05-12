@@ -2,6 +2,8 @@
 // value of 8th
 4096::samp => dur T;
 
+/***************************************************** Network Initialization */
+
 // send objects
 OscSend xmit[16];
 // number of targets
@@ -10,15 +12,42 @@ OscSend xmit[16];
 6449 => int port;
 
 // aim the transmitter at port
-xmit[0].setHost ( "localhost", port );
+fun void netinit() {
+  if ((me.arg(0) == "local") || (me.arg(0) == "l"))
+  {
+    xmit[0].setHost ( "localhost", port );
+  } else 
+  {
+    xmit[0].setHost ( "blt.local", port );
+    xmit[1].setHost ( "quesadilla.local", port );
+    xmit[2].setHost ( "tikkamasala.local", port );
+    xmit[3].setHost ( "transfat.local", port );
+    xmit[4].setHost ( "peanutbutter.local", port );
+    xmit[5].setHost ( "tofurkey.local", port );
+    xmit[6].setHost ( "doubledouble.local", port );
+    xmit[7].setHost ( "seventeen.local", port );
+    xmit[8].setHost ( "aguachile.local", port );
+    xmit[9].setHost ( "snickers.local", port );
+    xmit[10].setHost ( "padthai.local", port );
+    xmit[11].setHost ( "flavorblasted.local", port );
+    xmit[12].setHost ( "dolsotbibimbop.local", port );
+    xmit[13].setHost ( "poutine.local", port );
+    xmit[14].setHost ( "shabushabu.local", port );
+    xmit[15].setHost ( "froyo.local", port );
+    //xmit[11].setHost ( "pupuplatter.local", port );
+    //xmit[13].setHost ( "xiaolongbao.local", port );
+    //xmit[14].setHost ( "turkducken.local", port );
+    //xmit[16].setHost ( "oatmealraisin.local", port );
+  }
+}
+
+<<< me.arg(0) >>>;
+
+/************************************************* Global Grid Initialization */
 
 // dimensions
 10 => int height;
 10 => int width;
-string gridString;
-for (int i; i < height * width; i++) {
-  "i " +=> gridString;
-}
 
 //zero initialized, heap memory
 new RGB[height*width] @=> RGB @ grid[];
@@ -35,6 +64,8 @@ class Point {
     int y;
 }
 
+/*********************************************************** Driver Functions */
+
 fun void printRGB(RGB @ var) {
   <<< "r:", var.r, " g: ", var.g, " b: ", var.b, " o: ", var.isOccupied()>>>;
 }
@@ -45,7 +76,7 @@ fun void printPoint(int id, Point @ pos) {
 
 [60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12,66-12,70-12] @=> int scale[];
 
-fun void init()
+fun void gridinit()
 {
   for( 0 => y; y < height; y++ ) 
   {
@@ -247,9 +278,9 @@ fun void gridEvolution()
   }
 }
 
-
-//control
-init();
+/******************************************************************** Control */
+netinit();
+gridinit();
 spork ~server();
 spork ~receiver();
 gridEvolution();
