@@ -8,6 +8,14 @@
 // print channels
 <<< "* channels:", dac.channels() >>>;
 
+if (me.arg(0) == "")
+{
+  <<< "You must specify the name of the server" >>>;
+  <<< "- for local mode: \"local\"" >>>;
+  <<< "- otherwise: the name of the machine running the server code." >>>;
+  me.exit();
+}
+
 //instantiated by first/subsequent server message
 int id;
 
@@ -95,8 +103,13 @@ fun void client()
   // port
   6451 => int port;
 
+  me.arg(0) => string host;
+  if ((host == "l") || (host == "local")) {
+    "localhost" => host;
+  }
+
   // aim the transmitter at port
-  xmit.setHost ( "localhost", port );
+  xmit.setHost ( host, port );
 
   // infinite event loop
   while( true )
