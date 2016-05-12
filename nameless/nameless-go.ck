@@ -16,12 +16,17 @@ if (me.arg(0) == "")
   me.exit();
 }
 
+/******************************************************************** Globals */
+
 //instantiated by first/subsequent server message
 int id;
 
+//r g b MIDI values
 int r;
 int g;
 int b;
+
+/******************************************************************** Network */
 
 // receiver
 fun void network()
@@ -166,9 +171,13 @@ fun void client()
   }
 }
 
+/*********************************************************** Sound Production */
+
+Gain globalG => dac;
 fun void drone()
 {
-  BeeThree rOsc => ADSR a => LPF l => dac;
+  BeeThree rOsc => ADSR a => LPF l => Gain g => globalG;
+  g.gain(0.1);
   l.freq(300);
   rOsc.lfoSpeed(1);
   rOsc.lfoDepth(0.01);

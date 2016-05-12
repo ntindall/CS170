@@ -6,18 +6,21 @@
 
 // send objects
 OscSend xmit[16];
-// number of targets
-1 => int targets;
+// number of targets (initialized by netinit)
+int targets;
 // port
 6449 => int port;
 
 // aim the transmitter at port
 fun void netinit() {
-  if ((me.arg(0) == "local") || (me.arg(0) == "l"))
+  if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
   {
+    1 => targets;
     xmit[0].setHost ( "localhost", port );
   } else 
   {
+    //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
+    16 => targets;
     xmit[0].setHost ( "blt.local", port );
     xmit[1].setHost ( "quesadilla.local", port );
     xmit[2].setHost ( "tikkamasala.local", port );
@@ -40,8 +43,6 @@ fun void netinit() {
     //xmit[16].setHost ( "oatmealraisin.local", port );
   }
 }
-
-<<< me.arg(0) >>>;
 
 /************************************************* Global Grid Initialization */
 
@@ -67,7 +68,7 @@ graphicsXmit.setHost ( "localhost", graphicsPort );
 new RGB[height*width] @=> RGB @ grid[];
 
 //The location of each target
-Point positions[targets];
+Point positions[16];
 
 int x;
 int y;
@@ -305,8 +306,6 @@ fun void gridEvolution()
 /******************************************************************** Control */
 netinit();
 gridinit();
-
-server.ck
 spork ~server();
 spork ~receiver();
 gridEvolution();
