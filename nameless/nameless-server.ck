@@ -114,8 +114,7 @@ fun void gridinit()
   }
 }
 
-string cache;
-fun string printGrid() {
+fun string printGrid(int targetIdx) {
 
   "----------------------------\n" => string result;
   for( height - 1 => y; y >= 0; y--) 
@@ -125,16 +124,23 @@ fun string printGrid() {
       //calculate index
       y*width + x => int idx;
 
-      if (grid[idx].isOccupied()) {
-        "1  " +=> result;
+      if (grid[idx].isOccupied()) 
+      {
+        if (targetIdx == idx) 
+        {
+          //todo, be smarter about commandline feedback to give clients
+          //information about state
+          "X  " +=> result;
+
+        } else {
+          "1  " +=> result;
+        }
       } else {
         "0  " +=> result;
       }
     }
     "\n" +=> result;
   }
-
-  result @=> cache;
 
   return result;
 }
@@ -268,9 +274,11 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
-    <<< printGrid() >>>;
+    <<< printGrid(-1) >>>;
 
     new RGB[height*width] @=> RGB @ nextGrid[];
+
+    0 => int mutatedGrid;
     for( 0 => y; y < height; y++ ) 
     {
       for( 0 => x; x < width; x++ ) 
@@ -282,19 +290,24 @@ fun void gridEvolution()
           <<< "[!]\n[!]\n[!]\n" >>>;
           <<< "Terraforming!!!" >>>;
 
-         // avgNeighbors(x, y, grid[idx]) @=> grid[idx];
+          //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
+          1 => mutatedGrid;
 
           <<< "[!]\n[!]\n[!]\n" >>>;
 
-        }
+        } 
       }
     }
+
+    if (mutatedGrid) nextGrid @=> grid;
 
     //xmit
    for( 0 => z; z < targets; z++ ) 
    {  
+      positions[z].y*width + positions[z].x => int idx;
+
       xmit[z].startMsg( "/slork/io/grid", "s" );
-      cache                              => xmit[z].addString;
+      printGrid(idx) => xmit[z].addString;
 
    }
 
