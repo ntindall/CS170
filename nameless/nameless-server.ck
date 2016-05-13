@@ -7,7 +7,7 @@
 // send objects
 OscSend xmit[16];
 // number of targets
-1 => int targets;
+11 => int targets;
 // port
 6449 => int port;
 
@@ -18,22 +18,22 @@ fun void netinit() {
     xmit[0].setHost ( "localhost", port );
   } else 
   {
-    xmit[0].setHost ( "blt.local", port );
-    xmit[1].setHost ( "quesadilla.local", port );
-    xmit[2].setHost ( "tikkamasala.local", port );
-    xmit[3].setHost ( "transfat.local", port );
-    xmit[4].setHost ( "peanutbutter.local", port );
-    xmit[5].setHost ( "tofurkey.local", port );
-    xmit[6].setHost ( "doubledouble.local", port );
-    xmit[7].setHost ( "seventeen.local", port );
-    xmit[8].setHost ( "aguachile.local", port );
-    xmit[9].setHost ( "snickers.local", port );
-    xmit[10].setHost ( "padthai.local", port );
-    xmit[11].setHost ( "flavorblasted.local", port );
-    xmit[12].setHost ( "dolsotbibimbop.local", port );
-    xmit[13].setHost ( "poutine.local", port );
-    xmit[14].setHost ( "shabushabu.local", port );
-    xmit[15].setHost ( "froyo.local", port );
+    xmit[0].setHost ( "chowder.local", port );
+    xmit[1].setHost ( "kimchi.local", port );
+    xmit[2].setHost ( "jambalaya.local", port );
+    xmit[3].setHost ( "vindaloo.local", port );
+    xmit[4].setHost ( "spam.local", port );
+    xmit[5].setHost ( "pho.local", port );
+    xmit[6].setHost ( "foiegras.local", port );
+    xmit[7].setHost ( "nachos.local", port );
+    xmit[8].setHost ( "meatloaf.local", port );
+    xmit[9].setHost ( "donut.local", port );
+    xmit[10].setHost ( "albacore.local", port );
+    //xmit[11].setHost ( "flavorblasted.local", port );
+    //xmit[12].setHost ( "dolsotbibimbop.local", port );
+    //xmit[13].setHost ( "poutine.local", port );
+    //xmit[14].setHost ( "shabushabu.local", port );
+    //xmit[15].setHost ( "froyo.local", port );
     //xmit[11].setHost ( "pupuplatter.local", port );
     //xmit[13].setHost ( "xiaolongbao.local", port );
     //xmit[14].setHost ( "turkducken.local", port );
@@ -306,7 +306,6 @@ fun void gridEvolution()
 netinit();
 gridinit();
 
-server.ck
 spork ~server();
 spork ~receiver();
 gridEvolution();
