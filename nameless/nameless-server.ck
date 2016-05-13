@@ -341,10 +341,7 @@ fun void gridEvolution()
 /******************************************************************** Control */
 netinit();
 gridinit();
-<<<<<<< HEAD
 
-=======
->>>>>>> a8c9b056a666e3e045680bdb962e0cce9b8ac086
 spork ~server();
 spork ~receiver();
 gridEvolution();
