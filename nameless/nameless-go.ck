@@ -16,12 +16,21 @@ if (me.arg(0) == "")
   me.exit();
 }
 
+/******************************************************************** Globals */
+
 //instantiated by first/subsequent server message
 int id;
 
+//global parameter for controlling when client should begin entering sound
+//users should press spacebar to 'enter' the grid
+int hasEntered;
+
+//r g b MIDI values
 int r;
 int g;
 int b;
+
+/******************************************************************** Network */
 
 // receiver
 fun void network()
@@ -40,6 +49,11 @@ fun void network()
   // count
   0 => int count;
 
+  while (hasEntered == 0)
+  {
+    100::ms => now;
+  }
+
   // infinite event loop
   while ( true )
   {
@@ -56,11 +70,12 @@ fun void network()
       {
 
         r => int old_r;
+
         // get gain
         oe.getInt() => id;
         oe.getInt() => r;
 
-        if (r != old_r) {
+        if ((r != old_r) && (r != 0)) {
           spork ~drone();
         }
 
@@ -127,13 +142,19 @@ fun void client()
         xmit.startMsg("/slork/synch/move", "i i i");
         id => xmit.addInt;
 
-        if (msg.which == 7) {
+        if (msg.which == 44)
+        {
+          1 => hasEntered;
+        }
+
+        if (msg.which == 7) 
+        {
           //rearticulate drone
           spork ~drone();
         }
 
         //up
-        if (msg.which >= 79 && msg.which <= 82)
+        if ((hasEntered == 1) && (msg.which >= 79 && msg.which <= 82))
         {
 
           if (msg.which == 82) 
@@ -166,9 +187,13 @@ fun void client()
   }
 }
 
+/*********************************************************** Sound Production */
+
+Gain globalG => dac;
 fun void drone()
 {
-  BeeThree rOsc => ADSR a => LPF l => dac;
+  BeeThree rOsc => ADSR a => LPF l => Gain g => globalG;
+  g.gain(0.1);
   l.freq(300);
   rOsc.lfoSpeed(1);
   rOsc.lfoDepth(0.01);

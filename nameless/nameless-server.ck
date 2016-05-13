@@ -6,42 +6,43 @@
 
 // send objects
 OscSend xmit[16];
-// number of targets
-11 => int targets;
+// number of targets (initialized by netinit)
+int targets;
 // port
 6449 => int port;
 
 // aim the transmitter at port
 fun void netinit() {
-  if ((me.arg(0) == "local") || (me.arg(0) == "l"))
+  if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
   {
+    1 => targets;
     xmit[0].setHost ( "localhost", port );
   } else 
   {
-    xmit[0].setHost ( "chowder.local", port );
-    xmit[1].setHost ( "kimchi.local", port );
-    xmit[2].setHost ( "jambalaya.local", port );
-    xmit[3].setHost ( "vindaloo.local", port );
-    xmit[4].setHost ( "spam.local", port );
-    xmit[5].setHost ( "pho.local", port );
-    xmit[6].setHost ( "foiegras.local", port );
-    xmit[7].setHost ( "nachos.local", port );
-    xmit[8].setHost ( "meatloaf.local", port );
-    xmit[9].setHost ( "donut.local", port );
-    xmit[10].setHost ( "albacore.local", port );
-    //xmit[11].setHost ( "flavorblasted.local", port );
-    //xmit[12].setHost ( "dolsotbibimbop.local", port );
-    //xmit[13].setHost ( "poutine.local", port );
-    //xmit[14].setHost ( "shabushabu.local", port );
-    //xmit[15].setHost ( "froyo.local", port );
+    //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
+    16 => targets;
+    xmit[0].setHost ( "blt.local", port );
+    xmit[1].setHost ( "quesadilla.local", port );
+    xmit[2].setHost ( "tikkamasala.local", port );
+    xmit[3].setHost ( "transfat.local", port );
+    xmit[4].setHost ( "peanutbutter.local", port );
+    xmit[5].setHost ( "tofurkey.local", port );
+    xmit[6].setHost ( "doubledouble.local", port );
+    xmit[7].setHost ( "seventeen.local", port );
+    xmit[8].setHost ( "aguachile.local", port );
+    xmit[9].setHost ( "snickers.local", port );
+    xmit[10].setHost ( "padthai.local", port );
+    xmit[11].setHost ( "flavorblasted.local", port );
+    xmit[12].setHost ( "dolsotbibimbop.local", port );
+    xmit[13].setHost ( "poutine.local", port );
+    xmit[14].setHost ( "shabushabu.local", port );
+    xmit[15].setHost ( "froyo.local", port );
     //xmit[11].setHost ( "pupuplatter.local", port );
     //xmit[13].setHost ( "xiaolongbao.local", port );
     //xmit[14].setHost ( "turkducken.local", port );
     //xmit[16].setHost ( "oatmealraisin.local", port );
   }
 }
-
-<<< me.arg(0) >>>;
 
 /************************************************* Global Grid Initialization */
 
@@ -67,7 +68,7 @@ graphicsXmit.setHost ( "localhost", graphicsPort );
 new RGB[height*width] @=> RGB @ grid[];
 
 //The location of each target
-Point positions[targets];
+Point positions[16];
 
 int x;
 int y;
@@ -80,13 +81,32 @@ class Point {
 
 /*********************************************************** Driver Functions */
 
-fun void printRGB(RGB @ var) {
+fun void printRGB(RGB @ var) 
+{
   <<< "r:", var.r, " g: ", var.g, " b: ", var.b, " o: ", var.isOccupied()>>>;
 }
 
-fun void printPoint(int id, Point @ pos) {
+fun void printPoint(int id, Point @ pos) 
+{
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
+
+fun RGB[] deepCopy (RGB @ g[])
+{
+  new RGB[height*width] @=> RGB @ next[];
+  for( 0 => y; y < height; y++ ) 
+  {
+    for( 0 => x; x < width; x++ ) 
+    {
+      y*width + x => int idx;
+
+      g[idx] @=> next[idx];
+    }
+  }
+
+  return next;
+}
+
 
 [60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12,66-12,70-12] @=> int scale[];
 
@@ -113,8 +133,7 @@ fun void gridinit()
   }
 }
 
-string cache;
-fun string printGrid() {
+fun string printGrid(int targetIdx) {
 
   "----------------------------\n" => string result;
   for( height - 1 => y; y >= 0; y--) 
@@ -124,16 +143,23 @@ fun string printGrid() {
       //calculate index
       y*width + x => int idx;
 
-      if (grid[idx].isOccupied()) {
-        "1  " +=> result;
+      if (grid[idx].isOccupied()) 
+      {
+        if (targetIdx == idx) 
+        {
+          //todo, be smarter about commandline feedback to give clients
+          //information about state
+          "X  " +=> result;
+
+        } else {
+          "1  " +=> result;
+        }
       } else {
         "0  " +=> result;
       }
     }
     "\n" +=> result;
   }
-
-  result @=> cache;
 
   return result;
 }
@@ -150,8 +176,8 @@ fun void server()
           for( 0 => z; z < targets; z++ ) 
           {  
               positions[z] @=> Point curPos; 
-              //printPoint(z, curPos);
-              //printRGB(grid[curPos.y*width+curPos.x]);
+              printPoint(z, curPos);
+              printRGB(grid[curPos.y*width+curPos.x]);
 
               // start the message...
               //id r g b
@@ -267,9 +293,11 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
-    <<< printGrid() >>>;
+    //<<< printGrid(-1) >>>;
 
-    new RGB[height*width] @=> RGB @ nextGrid[];
+    deepCopy(grid) @=> RGB @ nextGrid[];
+
+    0 => int mutatedGrid;
     for( 0 => y; y < height; y++ ) 
     {
       for( 0 => x; x < width; x++ ) 
@@ -281,19 +309,27 @@ fun void gridEvolution()
           <<< "[!]\n[!]\n[!]\n" >>>;
           <<< "Terraforming!!!" >>>;
 
-         // avgNeighbors(x, y, grid[idx]) @=> grid[idx];
+          //important note... if grid cell changes while someone is on it, they
+          //will be notified IMMEDIATELY and could potentially spork/create
+          //sound (as they normally would upon a position / pitch change)
+          avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
+          1 => mutatedGrid;
 
           <<< "[!]\n[!]\n[!]\n" >>>;
 
-        }
+        } 
       }
     }
+
+    if (mutatedGrid == 1) nextGrid @=> grid;
 
     //xmit
    for( 0 => z; z < targets; z++ ) 
    {  
+      positions[z].y*width + positions[z].x => int idx;
+
       xmit[z].startMsg( "/slork/io/grid", "s" );
-      cache                              => xmit[z].addString;
+      printGrid(idx) => xmit[z].addString;
 
    }
 
@@ -305,7 +341,10 @@ fun void gridEvolution()
 /******************************************************************** Control */
 netinit();
 gridinit();
+<<<<<<< HEAD
 
+=======
+>>>>>>> a8c9b056a666e3e045680bdb962e0cce9b8ac086
 spork ~server();
 spork ~receiver();
 gridEvolution();
