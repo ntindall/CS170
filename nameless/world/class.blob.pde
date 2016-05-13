@@ -14,12 +14,12 @@ class Blob {
 
   void setX(float x) {
     float _x = 300 + (50 * x);
-    Ani.to(this, 0.1, "x", _x);
+    Ani.to(this, 5, "x", _x);
   }
 
   void setY(float y) {
     float _y = 400 - (50 * y);
-    Ani.to(this, 0.1, "y", _y);
+    Ani.to(this, 5, "y", _y);
   }
 
   void hide() {
