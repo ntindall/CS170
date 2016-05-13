@@ -2,6 +2,36 @@
 // value of 8th
 4096::samp => dur T;
 
+/************************************************* Global Grid Initialization */
+
+// -------------
+// graphics init
+// -------------
+// send objects
+OscSend graphicsXmit;
+// port
+4242 => int graphicsPort;
+
+// aim the transmitter at port
+graphicsXmit.setHost ( "localhost", graphicsPort ); 
+
+// -------------
+
+// dimensions
+10 => int height;
+10 => int width;
+
+//zero initialized, heap memory
+new HSV[height*width] @=> HSV @ grid[];
+
+//The location of each target
+Point positions[16];
+
+class Point {
+    int x;
+    int y;
+}
+
 /***************************************************** Network Initialization */
 
 // send objects
@@ -42,48 +72,20 @@ fun void netinit() {
     //xmit[14].setHost ( "turkducken.local", port );
     //xmit[16].setHost ( "oatmealraisin.local", port );
   }
-}
 
-/************************************************* Global Grid Initialization */
-
-
-// -------------
-// graphics init
-// -------------
-// send objects
-OscSend graphicsXmit;
-// port
-4242 => int graphicsPort;
-
-// aim the transmitter at port
-graphicsXmit.setHost ( "localhost", graphicsPort ); 
-
-// -------------
-
-// dimensions
-10 => int height;
-10 => int width;
-
-//zero initialized, heap memory
-new RGB[height*width] @=> RGB @ grid[];
-
-//The location of each target
-Point positions[16];
-
-int x;
-int y;
-int z;
-
-class Point {
-    int x;
-    int y;
+  for (int i; i < targets; i++)
+  {
+    Math.random2(0,width - 1) => positions[i].x;
+    Math.random2(0,height - 1) => positions[i].y;
+  }
 }
 
 /*********************************************************** Driver Functions */
 
-fun void printRGB(RGB @ var) 
+fun void printHSV(HSV @ var) 
 {
-  <<< "r:", var.r, " g: ", var.g, " b: ", var.b, " o: ", var.isOccupied()>>>;
+  <<< "p:", var.pitch, "h:", var.h, " s: ", var.s, " v: ", var.v, " o: ", 
+       var.isOccupied() >>>;
 }
 
 fun void printPoint(int id, Point @ pos) 
@@ -91,12 +93,12 @@ fun void printPoint(int id, Point @ pos)
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
 
-fun RGB[] deepCopy (RGB @ g[])
+fun HSV[] deepCopy (HSV @ g[])
 {
-  new RGB[height*width] @=> RGB @ next[];
-  for( 0 => y; y < height; y++ ) 
+  new HSV[height*width] @=> HSV @ next[];
+  for( 0 => int y; y < height; y++ ) 
   {
-    for( 0 => x; x < width; x++ ) 
+    for( 0 => int x; x < width; x++ ) 
     {
       y*width + x => int idx;
 
@@ -112,23 +114,17 @@ fun RGB[] deepCopy (RGB @ g[])
 
 fun void gridinit()
 {
-  for( 0 => y; y < height; y++ ) 
+  for( 0 => int y; y < height; y++ ) 
   {
-    for( 0 => x; x < width; x++ ) 
+    for( 0 => int x; x < width; x++ ) 
     {
       //calculate index
       y*width + x => int idx;
 
-      scale[x] + y * 12 => grid[idx].r;
+      scale[x] + y * 12 => grid[idx].pitch;
 
-      /*
-      Math.random2(0,scale.cap() - 1) => which;
-      scale[which] + (Math.random2(0,2) * 12) => grid[idx].g;
-
-      Math.random2(0,scale.cap() - 1) => which;
-      scale[which] + (Math.random2(0,2) * 12) => grid[idx].b;
-      */
-
+      //initialize hue to warmish
+      Math.random2(0,60) => grid[idx].h;
     }
   }
 }
@@ -136,9 +132,9 @@ fun void gridinit()
 fun string printGrid(int targetIdx) {
 
   "----------------------------\n" => string result;
-  for( height - 1 => y; y >= 0; y--) 
+  for( height - 1 => int y; y >= 0; y--) 
   {
-    for( 0 => x; x < width; x++ ) 
+    for( 0 => int x; x < width; x++ ) 
     {
       //calculate index
       y*width + x => int idx;
@@ -169,26 +165,27 @@ fun void server()
   // infinite time loop
   while( true ) 
   {
-    for( 0 => y; y < height; y++ ) 
+    for( 0 => int y; y < height; y++ ) 
     {
-      for( 0 => x; x < width; x++ ) 
+      for( 0 => int x; x < width; x++ ) 
       {
-          for( 0 => z; z < targets; z++ ) 
+          for( 0 => int z; z < targets; z++ ) 
           {  
               positions[z] @=> Point curPos; 
               printPoint(z, curPos);
-              printRGB(grid[curPos.y*width+curPos.x]);
+              printHSV(grid[curPos.y*width+curPos.x]);
 
               // start the message...
-              //id r g b
-              xmit[z].startMsg( "/slork/synch/synth", "i i i i" );
+              //id midi r g b
+              xmit[z].startMsg( "/slork/synch/synth", "i i i i i" );
 
               // a message is kicked as soon as it is complete 
               // - type string is satisfied and bundles are closed
-              z                               => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].r => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].g => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].b => xmit[z].addInt;
+              z                                   => xmit[z].addInt;
+              grid[curPos.y*width+curPos.x].pitch => xmit[z].addInt;
+              grid[curPos.y*width+curPos.x].h     => xmit[z].addInt;
+              grid[curPos.y*width+curPos.x].s     => xmit[z].addInt;
+              grid[curPos.y*width+curPos.x].v     => xmit[z].addInt;
 
           }
 
@@ -253,8 +250,8 @@ fun void updateGraphics(int id, int x, int y) {
   y => graphicsXmit.addInt;
 }
 
-fun RGB avgNeighbors(int x, int y, RGB @ cel) {
-  RGB average;
+fun HSV avgNeighbors(int x, int y, HSV @ cel) {
+  HSV average;
   cel.who @=> average.who;
 
   for (-1 => int i; i <= 1; i++)
@@ -274,17 +271,17 @@ fun RGB avgNeighbors(int x, int y, RGB @ cel) {
 
       neighY * width + neighX => int idx;
 
-      grid[idx].r +=> average.r;
-      grid[idx].g +=> average.g;
-      grid[idx].b +=> average.b;
+      grid[idx].h +=> average.h;
+      grid[idx].s +=> average.s;
+      grid[idx].v +=> average.v;
       //okay, safe to index now.
 
     }
   }
 
-  average.r / 8 => average.r;
-  average.g / 8 => average.g;
-  average.b / 8 => average.b;
+  average.h / 8 => average.h;
+  average.s / 8 => average.s;
+  average.v / 8 => average.v;
 
   return average;
 }
@@ -295,12 +292,12 @@ fun void gridEvolution()
   {
     //<<< printGrid(-1) >>>;
 
-    deepCopy(grid) @=> RGB @ nextGrid[];
+    deepCopy(grid) @=> HSV @ nextGrid[];
 
     0 => int mutatedGrid;
-    for( 0 => y; y < height; y++ ) 
+    for( 0 => int y; y < height; y++ ) 
     {
-      for( 0 => x; x < width; x++ ) 
+      for( 0 => int x; x < width; x++ ) 
       {
         //calculate index
         y*width + x => int idx;
@@ -312,7 +309,7 @@ fun void gridEvolution()
           //important note... if grid cell changes while someone is on it, they
           //will be notified IMMEDIATELY and could potentially spork/create
           //sound (as they normally would upon a position / pitch change)
-          avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
+          //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
           1 => mutatedGrid;
 
           <<< "[!]\n[!]\n[!]\n" >>>;
@@ -323,15 +320,14 @@ fun void gridEvolution()
 
     if (mutatedGrid == 1) nextGrid @=> grid;
 
-    //xmit
-   for( 0 => z; z < targets; z++ ) 
-   {  
+      //xmit
+    for( 0 => int z; z < targets; z++ ) 
+    {  
       positions[z].y*width + positions[z].x => int idx;
 
       xmit[z].startMsg( "/slork/io/grid", "s" );
       printGrid(idx) => xmit[z].addString;
-
-   }
+    }
 
     //evolution time
     100::ms => now;

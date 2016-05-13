@@ -1,9 +1,10 @@
-public class RGB {
+public class HSV {
 
   16 => int MAX_OCCUPANTS; 
-  int r;
-  int g;
-  int b;
+  int pitch; //MIDI
+  int h;
+  int s;
+  int v;
   int who[MAX_OCCUPANTS]; //hard coded number of max occupants
 
 

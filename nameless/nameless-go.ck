@@ -16,6 +16,24 @@ if (me.arg(0) == "")
   me.exit();
 }
 
+/******************************************************************** Welcome */
+
+<<< 
+"Control Information for Players
+
+ - <SPACE>             to begin / enter world
+ - ^v<> keys           to navigate world
+ - d                   to rearticulate drone (on your current position)
+
+It is possible that the state of the world could change while you are on it.
+The server may change global parameters and notify clients immediately.
+
+By moving to a new cell, you will generate a tone. The envelope of the tone is
+tuned by the server. Some envelopes will tend towards more or less movement.
+"
+>>>;
+
+
 /******************************************************************** Globals */
 
 //instantiated by first/subsequent server message
@@ -26,9 +44,11 @@ int id;
 int hasEntered;
 
 //r g b MIDI values
-int r;
-int g;
-int b;
+int pitch;
+
+int h;
+int s;
+int v;
 
 /******************************************************************** Network */
 
@@ -43,7 +63,8 @@ fun void network()
   recv.listen();
 
   // create an address in the receiver, store in new variable
-  recv.event( "/slork/synch/synth, i i i i" ) @=> OscEvent oe;
+  //id pitch r g b
+  recv.event( "/slork/synch/synth, i i i i i" ) @=> OscEvent oe;
   recv.event( "/slork/io/grid, s") @=> OscEvent ge;
 
   // count
@@ -69,20 +90,21 @@ fun void network()
       while( oe.nextMsg() != 0 )
       {
 
-        r => int old_r;
+        pitch => int old_pitch;
 
         // get gain
         oe.getInt() => id;
-        oe.getInt() => r;
+        oe.getInt() => pitch;
 
-        if ((r != old_r) && (r != 0)) {
+        if ((pitch != old_pitch) && (old_pitch != 0)) {
           spork ~drone();
         }
 
-        oe.getInt() => g;
-        oe.getInt() => b;
+        oe.getInt() => h;
+        oe.getInt() => s;
+        oe.getInt() => v;
 
-       // <<< r,g,b >>>;
+        <<< pitch, h,s,v >>>;
       }
 
       // grab the next message from the queue. 
@@ -147,7 +169,7 @@ fun void client()
           1 => hasEntered;
         }
 
-        if (msg.which == 7) 
+        if ((hasEntered == 1) && (msg.which == 7))
         {
           //rearticulate drone
           spork ~drone();
@@ -192,28 +214,59 @@ fun void client()
 Gain globalG => dac;
 fun void drone()
 {
-  BeeThree rOsc => ADSR a => LPF l => Gain g => globalG;
-  g.gain(0.1);
-  l.freq(300);
-  rOsc.lfoSpeed(1);
-  rOsc.lfoDepth(0.01);
-  rOsc.controlOne(1);
- // SinOsc gOsc => a;
- // SinOsc bOsc => a;
 
-  1 => rOsc.noteOn;
+  int lpfCutoff;
+
+  //determine color type of current cell.. do something (more?) intelligent
+  if (h >= 0 && h < 60 || h > 300)
+  {
+    //warmest
+    h => int temp;
+    if (temp > 300) 360 - temp => temp;
+
+    //okay. we have a number between 60 and 0
+    12000 - temp*100 => lpfCutoff;
+    //bound between 12000 and 3000
+
+  }
+  if (h >= 60 && h < 180)
+  {
+    3000 - (h - 60)*15 => lpfCutoff;
+    //earthy green /yellow/cyan
+    //bound to 3000 and 1200
+  }
+  if (h >= 180 && h < 300)
+  {
+    (1200 - (h - 180)*7.5) $ int => lpfCutoff;
+    //bound between 1200 and 300
+    //coolest
+  }
+
+
+  ADSR a => LPF l =>  globalG;
+  l.freq(lpfCutoff);
+
+  BeeThree cool => Gain coolGain => a;
+  coolGain.gain(0.1);
+  cool.lfoSpeed(1);
+  cool.lfoDepth(0.01);
+  cool.controlOne(1);
+
+/*
+  SqrOsc warm => Gain warmGain => a;
+  warmGain.gain(0.1);
+  */
+
+  1 => cool.noteOn;
   a.set(5::second, 5::second, 0.1, 5::second);
-  <<< r, g, b >>>;
-  rOsc.freq(Std.mtof(r));
-  //gOsc.freq(Std.mtof(g));
-  //bOsc.freq(Std.mtof(b));
+  Std.mtof(pitch) => cool.freq;
 
   a.keyOn();
   10::second => now;
   a.keyOff();
   5::second => now;
 
-  1 => rOsc.noteOff;
+  1 => cool.noteOff;
 }
 
 spork ~network();
