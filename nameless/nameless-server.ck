@@ -43,6 +43,14 @@ int targets;
 // port
 6449 => int port;
 
+// create our OSC receiver
+OscRecv recv;
+// use port 6449
+6451 => recv.port;
+// start listening (launch thread)
+recv.listen();
+
+
 // aim the transmitter at port
 fun void netinit() {
   if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
@@ -54,7 +62,7 @@ fun void netinit() {
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
     2 => targets;
     xmit[0].setHost ( "localhost", port );
-    xmit[1].setHost ( "Nathan.local", port );
+   // xmit[1].setHost ( "Nathan.local", port );
     /*
     xmit[2].setHost ( "tikkamasala.local", port );
     xmit[3].setHost ( "transfat.local", port );
@@ -188,13 +196,6 @@ fun void updateClients()
 
 fun void handleClient()
 {
-  // create our OSC receiver
-  OscRecv recv;
-  // use port 6449
-  6451 => recv.port;
-  // start listening (launch thread)
-  recv.listen();
-
   // create an address in the receiver, store in new variable
   //id x y
   recv.event( "/slork/synch/move, i i i" ) @=> OscEvent oe;
@@ -234,7 +235,29 @@ fun void handleClient()
   }
 }
 
-// fun void handleActions()
+fun void handleAction() {
+  //create an address to store action events
+  //id actionID
+  recv.event( "/slork/synch/action, i i") @=> OscEvent acte;
+
+  while (true)
+  {
+    acte => now;
+
+    while ( acte.nextMsg() != 0)
+    {
+      acte.getInt() => int id;
+      acte.getInt() => int actionId;
+
+      //if only there were enums
+      if (actionId == 1)
+      {
+        //update graphics
+      }
+    }
+  }
+
+}
 
 fun void g_updatePlayerPos(int id, int x, int y) {
   graphicsXmit.startMsg("/nameless/graphics/position", "i i i");

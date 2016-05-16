@@ -52,6 +52,19 @@ int v;
 
 Event playerMoved;
 
+// osc handle for server
+OscSend xmit;
+// server listening port
+6451 => int port;
+
+me.arg(0) => string host;
+if ((host == "l") || (host == "local")) {
+  "localhost" => host;
+}
+
+// aim the transmitter at port
+xmit.setHost ( host, port );
+
 /******************************************************************** Network */
 
 // receiver
@@ -114,6 +127,16 @@ fun void network()
   }
 }
 
+fun void xmitMove(int deltaX, int deltaY)
+{
+  // a message is kicked as soon as it is complete 
+  // - type string is satisfied and bundles are closed
+  xmit.startMsg("/slork/synch/move", "i i i");
+  id => xmit.addInt;
+  deltaX => xmit.addInt;
+  deltaY => xmit.addInt;
+}
+
 fun void client()
 {
 
@@ -130,21 +153,6 @@ fun void client()
   // successful! print name of device
   <<< "keyboard '", hi.name(), "' ready" >>>;
 
-  // send objects
-  OscSend xmit;
-  // number of targets
-  1 => int targets;
-  // port
-  6451 => int port;
-
-  me.arg(0) => string host;
-  if ((host == "l") || (host == "local")) {
-    "localhost" => host;
-  }
-
-  // aim the transmitter at port
-  xmit.setHost ( host, port );
-
   // infinite event loop
   while( true )
   {
@@ -156,16 +164,11 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
-        // a message is kicked as soon as it is complete 
-        // - type string is satisfied and bundles are closed
-        xmit.startMsg("/slork/synch/move", "i i i");
-        id => xmit.addInt;
 
         if (msg.which == 44)
         {
           1 => hasEntered;
-          0 => xmit.addInt;
-          0 => xmit.addInt;
+          xmitMove(0, 0);
           spork ~drone();
         }
 
@@ -175,33 +178,20 @@ fun void client()
           spork ~drone();
         }
 
-        if ((hasEntered == 1) && (msg.which >= 79 && msg.which <= 82))
+        if (hasEntered == 1)
         {
-          //up
-          if (msg.which == 82) 
-          {
-            1 => xmit.addInt;
-            0 => xmit.addInt;
-          }
-          //down
-          if (msg.which == 81) 
-          {
-            -1 => xmit.addInt;
-            0  => xmit.addInt;
-          }
-          //left
-          if (msg.which == 80) 
-          {          
-            0 => xmit.addInt;
-            -1  => xmit.addInt;
+          //d, rearticulate drone
+          if (msg.which == 7) spork ~drone();
 
-          }
+          /************************************************ ARROW KEY CONTROL */
+          //up
+          if (msg.which == 82) xmitMove(1, 0);
+          //down
+          if (msg.which == 81) xmitMove(-1, 0);
+          //left
+          if (msg.which == 80) xmitMove(0, -1);
           //right
-          if (msg.which == 79)
-          {
-            0 => xmit.addInt;
-            1  => xmit.addInt;
-          }
+          if (msg.which == 79) xmitMove(0, 1);
 
           playerMoved.broadcast();
         }
