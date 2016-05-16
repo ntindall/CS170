@@ -6,7 +6,7 @@ OscP5 oscP5;
 
 // data
 Colors colors = new Colors();
-static int N_PLAYERS = 11;
+static int N_PLAYERS = 1;
 
 // geometry
 Blob[] blobs = new Blob[N_PLAYERS];

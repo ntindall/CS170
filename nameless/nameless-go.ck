@@ -64,16 +64,17 @@ fun void network()
 
   // create an address in the receiver, store in new variable
   //id pitch r g b
-  recv.event( "/slork/synch/synth, i i i i i" ) @=> OscEvent oe;
-  recv.event( "/slork/io/grid, s") @=> OscEvent ge;
+  recv.event( "/slork/synch/synth, i i i i i s" ) @=> OscEvent oe;
 
   // count
   0 => int count;
 
+  /*
   while (hasEntered == 0)
   {
     100::ms => now;
   }
+  */
 
   // infinite event loop
   while ( true )
@@ -96,7 +97,7 @@ fun void network()
         oe.getInt() => id;
         oe.getInt() => pitch;
 
-        if ((pitch != old_pitch) && (old_pitch != 0)) {
+        if ((pitch != old_pitch) && (hasEntered)) {
           spork ~drone();
         }
 
@@ -105,14 +106,8 @@ fun void network()
         oe.getInt() => v;
 
         <<< pitch, h,s,v >>>;
-      }
 
-      // grab the next message from the queue. 
-      while( ge.nextMsg() != 0 )
-      {
-        // get gain
-        ge.getString() => string grid;
-        <<< grid >>>;
+        <<< oe.getString() >>>;
       }
   }
 }
@@ -167,6 +162,9 @@ fun void client()
         if (msg.which == 44)
         {
           1 => hasEntered;
+          0 => xmit.addInt;
+          0 => xmit.addInt;
+          spork ~drone();
         }
 
         if ((hasEntered == 1) && (msg.which == 7))
@@ -175,10 +173,9 @@ fun void client()
           spork ~drone();
         }
 
-        //up
         if ((hasEntered == 1) && (msg.which >= 79 && msg.which <= 82))
         {
-
+          //up
           if (msg.which == 82) 
           {
             1 => xmit.addInt;

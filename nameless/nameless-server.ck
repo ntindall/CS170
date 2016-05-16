@@ -72,12 +72,6 @@ fun void netinit() {
     //xmit[14].setHost ( "turkducken.local", port );
     //xmit[16].setHost ( "oatmealraisin.local", port );
   }
-
-  for (int i; i < targets; i++)
-  {
-    Math.random2(0,width - 1) => positions[i].x;
-    Math.random2(0,height - 1) => positions[i].y;
-  }
 }
 
 /*********************************************************** Driver Functions */
@@ -126,6 +120,14 @@ fun void gridinit()
       //initialize hue to warmish
       Math.random2(0,60) => grid[idx].h;
     }
+  }
+
+  for (int i; i < targets; i++)
+  {
+    // Math.random2(0,width - 1) => positions[i].x;
+    // Math.random2(0,height - 1) => positions[i].y;
+    0 => positions[i].x;
+    0 => positions[i].y;
   }
 }
 
@@ -196,7 +198,31 @@ fun void server()
   }
 }
 
-fun void receiver()
+fun void updateClients()
+{
+  for( 0 => int z; z < targets; z++ ) 
+  {  
+      positions[z] @=> Point curPos; 
+      printPoint(z, curPos);
+      printHSV(grid[curPos.y*width+curPos.x]);
+
+      // start the message...
+      //id midi r g b
+      xmit[z].startMsg( "/slork/synch/synth", "i i i i i s" );
+
+      // a message is kicked as soon as it is complete 
+      // - type string is satisfied and bundles are closed
+      z                                   => xmit[z].addInt;
+      grid[curPos.y*width+curPos.x].pitch => xmit[z].addInt;
+      grid[curPos.y*width+curPos.x].h     => xmit[z].addInt;
+      grid[curPos.y*width+curPos.x].s     => xmit[z].addInt;
+      grid[curPos.y*width+curPos.x].v     => xmit[z].addInt;
+
+      printGrid(curPos.y*width+curPos.x) => xmit[z].addString;
+  }
+}
+
+fun void handleClient()
 {
   // create our OSC receiver
   OscRecv recv;
@@ -238,12 +264,13 @@ fun void receiver()
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
 
-      updateGraphics(id, positions[id].x, positions[id].y);
+      spork ~g_updatePlayerPos(id, positions[id].x, positions[id].y);
+      spork ~updateClients();
     }
   }
 }
 
-fun void updateGraphics(int id, int x, int y) {
+fun void g_updatePlayerPos(int id, int x, int y) {
   graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
   id => graphicsXmit.addInt;
   x => graphicsXmit.addInt;
@@ -290,7 +317,7 @@ fun void gridEvolution()
 {
   while ( true ) 
   {
-    //<<< printGrid(-1) >>>;
+    <<< printGrid(-1) >>>;
 
     deepCopy(grid) @=> HSV @ nextGrid[];
 
@@ -320,7 +347,8 @@ fun void gridEvolution()
 
     if (mutatedGrid == 1) nextGrid @=> grid;
 
-      //xmit
+    //xmit
+    /*
     for( 0 => int z; z < targets; z++ ) 
     {  
       positions[z].y*width + positions[z].x => int idx;
@@ -328,16 +356,52 @@ fun void gridEvolution()
       xmit[z].startMsg( "/slork/io/grid", "s" );
       printGrid(idx) => xmit[z].addString;
     }
+    */
+
+    spork ~updateClients();
 
     //evolution time
-    100::ms => now;
+    10::ms => now;
   }
+}
+
+fun void updateGrid()
+{
+  <<< printGrid(-1) >>>;
+
+  deepCopy(grid) @=> HSV @ nextGrid[];
+
+  0 => int mutatedGrid;
+  for( 0 => int y; y < height; y++ ) 
+  {
+    for( 0 => int x; x < width; x++ ) 
+    {
+      //calculate index
+      y*width + x => int idx;
+
+      if (now % 20::second == 0::second && grid[idx].isOccupied()) {
+        <<< "[!]\n[!]\n[!]\n" >>>;
+        <<< "Terraforming!!!" >>>;
+
+        //important note... if grid cell changes while someone is on it, they
+        //will be notified IMMEDIATELY and could potentially spork/create
+        //sound (as they normally would upon a position / pitch change)
+        //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
+        1 => mutatedGrid;
+
+        <<< "[!]\n[!]\n[!]\n" >>>;
+
+      } 
+    }
+  }
+
+  if (mutatedGrid == 1) nextGrid @=> grid;
 }
 
 /******************************************************************** Control */
 netinit();
 gridinit();
 
-spork ~server();
-spork ~receiver();
-gridEvolution();
+// spork ~server();
+handleClient();
+// gridEvolution();
