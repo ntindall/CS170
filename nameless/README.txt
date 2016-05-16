@@ -13,3 +13,10 @@ To run local:
 chuck run-nameless-go.ck:(name of server)
 
 if name of server is not specified, assumed to be localhost.
+
+--------------------------------------------------------------------------------
+
+To do:
+- server ability to change color of client
+- client needs to have a color map
+  - more sound sources

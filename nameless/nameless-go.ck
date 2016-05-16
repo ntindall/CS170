@@ -50,6 +50,8 @@ int h;
 int s;
 int v;
 
+Event playerMoved;
+
 /******************************************************************** Network */
 
 // receiver
@@ -200,6 +202,8 @@ fun void client()
             0 => xmit.addInt;
             1  => xmit.addInt;
           }
+
+          playerMoved.broadcast();
         }
       }
     }
@@ -255,13 +259,16 @@ fun void drone()
   */
 
   1 => cool.noteOn;
-  a.set(5::second, 5::second, 0.1, 5::second);
+  a.set(20::second, 0::second, 1, 10::second);
   Std.mtof(pitch) => cool.freq;
 
   a.keyOn();
-  10::second => now;
+  // 10::second => now;
+
+  playerMoved => now;
+
   a.keyOff();
-  5::second => now;
+  10::second => now;
 
   1 => cool.noteOff;
 }
