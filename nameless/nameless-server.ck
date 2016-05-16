@@ -22,14 +22,16 @@ graphicsXmit.setHost ( "localhost", graphicsPort );
 10 => int width;
 
 //zero initialized, heap memory
-new HSV[height*width] @=> HSV @ grid[];
+new GridCell[height*width] @=> GridCell @ grid[];
 
 //The location of each target
-Point positions[16];
+PlayerState positions[16];
 
-class Point {
+class PlayerState {
     int x;
     int y;
+
+    HSV color;
 }
 
 /***************************************************** Network Initialization */
@@ -76,20 +78,19 @@ fun void netinit() {
 
 /*********************************************************** Driver Functions */
 
-fun void printHSV(HSV @ var) 
+fun void printGridCell(GridCell @ var) 
 {
-  <<< "p:", var.pitch, "h:", var.h, " s: ", var.s, " v: ", var.v, " o: ", 
-       var.isOccupied() >>>;
+  <<< "p:", var.pitch, " o: ", var.isOccupied() >>>;
 }
 
-fun void printPoint(int id, Point @ pos) 
+fun void printPlayerState(int id, PlayerState @ pos) 
 {
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
 }
 
-fun HSV[] deepCopy (HSV @ g[])
+fun GridCell[] deepCopy (GridCell @ g[])
 {
-  new HSV[height*width] @=> HSV @ next[];
+  new GridCell[height*width] @=> GridCell @ next[];
   for( 0 => int y; y < height; y++ ) 
   {
     for( 0 => int x; x < width; x++ ) 
@@ -116,9 +117,6 @@ fun void gridinit()
       y*width + x => int idx;
 
       scale[x] + y * 12 => grid[idx].pitch;
-
-      //initialize hue to warmish
-      Math.random2(0,60) => grid[idx].h;
     }
   }
 
@@ -162,49 +160,13 @@ fun string printGrid(int targetIdx) {
   return result;
 }
 
-fun void server()
-{
-  // infinite time loop
-  while( true ) 
-  {
-    for( 0 => int y; y < height; y++ ) 
-    {
-      for( 0 => int x; x < width; x++ ) 
-      {
-          for( 0 => int z; z < targets; z++ ) 
-          {  
-              positions[z] @=> Point curPos; 
-              printPoint(z, curPos);
-              printHSV(grid[curPos.y*width+curPos.x]);
-
-              // start the message...
-              //id midi r g b
-              xmit[z].startMsg( "/slork/synch/synth", "i i i i i" );
-
-              // a message is kicked as soon as it is complete 
-              // - type string is satisfied and bundles are closed
-              z                                   => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].pitch => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].h     => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].s     => xmit[z].addInt;
-              grid[curPos.y*width+curPos.x].v     => xmit[z].addInt;
-
-          }
-
-          // advance time
-          T => now;
-      }
-    }
-  }
-}
-
 fun void updateClients()
 {
   for( 0 => int z; z < targets; z++ ) 
   {  
-      positions[z] @=> Point curPos; 
-      printPoint(z, curPos);
-      printHSV(grid[curPos.y*width+curPos.x]);
+      positions[z] @=> PlayerState curPlayer; 
+      printPlayerState(z, curPlayer);
+      printGridCell(grid[curPlayer.y*width+curPlayer.x]);
 
       // start the message...
       //id midi r g b
@@ -213,12 +175,12 @@ fun void updateClients()
       // a message is kicked as soon as it is complete 
       // - type string is satisfied and bundles are closed
       z                                   => xmit[z].addInt;
-      grid[curPos.y*width+curPos.x].pitch => xmit[z].addInt;
-      grid[curPos.y*width+curPos.x].h     => xmit[z].addInt;
-      grid[curPos.y*width+curPos.x].s     => xmit[z].addInt;
-      grid[curPos.y*width+curPos.x].v     => xmit[z].addInt;
+      grid[curPlayer.y*width+curPlayer.x].pitch => xmit[z].addInt;
+      curPlayer.color.h                            => xmit[z].addInt;
+      curPlayer.color.s                            => xmit[z].addInt;
+      curPlayer.color.v                            => xmit[z].addInt;
 
-      printGrid(curPos.y*width+curPos.x) => xmit[z].addString;
+      printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
   }
 }
 
@@ -277,8 +239,9 @@ fun void g_updatePlayerPos(int id, int x, int y) {
   y => graphicsXmit.addInt;
 }
 
-fun HSV avgNeighbors(int x, int y, HSV @ cel) {
-  HSV average;
+/*
+fun GridCell avgNeighbors(int x, int y, GridCell @ cel) {
+  GridCell average;
   cel.who @=> average.who;
 
   for (-1 => int i; i <= 1; i++)
@@ -312,6 +275,7 @@ fun HSV avgNeighbors(int x, int y, HSV @ cel) {
 
   return average;
 }
+*/
 
 fun void gridEvolution()
 {
@@ -319,7 +283,7 @@ fun void gridEvolution()
   {
     <<< printGrid(-1) >>>;
 
-    deepCopy(grid) @=> HSV @ nextGrid[];
+    deepCopy(grid) @=> GridCell @ nextGrid[];
 
     0 => int mutatedGrid;
     for( 0 => int y; y < height; y++ ) 
@@ -369,7 +333,7 @@ fun void updateGrid()
 {
   <<< printGrid(-1) >>>;
 
-  deepCopy(grid) @=> HSV @ nextGrid[];
+  deepCopy(grid) @=> GridCell @ nextGrid[];
 
   0 => int mutatedGrid;
   for( 0 => int y; y < height; y++ ) 

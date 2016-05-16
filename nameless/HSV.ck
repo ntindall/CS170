@@ -1,22 +1,7 @@
 public class HSV {
-
-  16 => int MAX_OCCUPANTS; 
-  int pitch; //MIDI
-  int h;
-  int s;
-  int v;
-  int who[MAX_OCCUPANTS]; //hard coded number of max occupants
-
-
-  fun int isOccupied() 
-  {
-    for (int i; i < MAX_OCCUPANTS; i++)
-    {
-      if (who[i] == 1) return true;
-    }
-
-    return false;
-  }
+  0 => int h;
+  0 => int s;
+  0 => int v;
 }
 
-1::day => now;
+while (true) 1::day => now;
