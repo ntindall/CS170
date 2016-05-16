@@ -52,9 +52,10 @@ fun void netinit() {
   } else 
   {
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-    16 => targets;
-    xmit[0].setHost ( "blt.local", port );
-    xmit[1].setHost ( "quesadilla.local", port );
+    2 => targets;
+    xmit[0].setHost ( "localhost", port );
+    xmit[1].setHost ( "Nathan.local", port );
+    /*
     xmit[2].setHost ( "tikkamasala.local", port );
     xmit[3].setHost ( "transfat.local", port );
     xmit[4].setHost ( "peanutbutter.local", port );
@@ -69,6 +70,7 @@ fun void netinit() {
     xmit[13].setHost ( "poutine.local", port );
     xmit[14].setHost ( "shabushabu.local", port );
     xmit[15].setHost ( "froyo.local", port );
+    */
     //xmit[11].setHost ( "pupuplatter.local", port );
     //xmit[13].setHost ( "xiaolongbao.local", port );
     //xmit[14].setHost ( "turkducken.local", port );
@@ -232,6 +234,8 @@ fun void handleClient()
   }
 }
 
+// fun void handleActions()
+
 fun void g_updatePlayerPos(int id, int x, int y) {
   graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
   id => graphicsXmit.addInt;
@@ -366,6 +370,6 @@ fun void updateGrid()
 netinit();
 gridinit();
 
-// spork ~server();
-handleClient();
-// gridEvolution();
+spork ~handleClient();
+
+while (true) 1::day => now;

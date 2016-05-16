@@ -20,3 +20,4 @@ To do:
 - server ability to change color of client
 - client needs to have a color map
   - more sound sources
+- nathan slew color on server

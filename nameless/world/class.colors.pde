@@ -19,9 +19,5 @@ class Colors {
 
   color getById(int id) {
     return colors[id % N_COLORS];
-    // if (id < N_COLORS)
-    //   return colors[id];
-    // else 
-    //   return colors[0];
   }
 }

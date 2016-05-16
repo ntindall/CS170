@@ -1,1 +1,1 @@
-chuck run-nameless-server.ck:local
+chuck run-nameless-server.ck:$1
