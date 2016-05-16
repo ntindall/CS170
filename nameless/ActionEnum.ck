@@ -1,0 +1,15 @@
+public class ActionEnum {
+  //hack to get shared enum state between client and server
+
+  fun static int jump()
+  {
+    return 0;
+  }
+
+  fun static int tinkle()
+  {
+    return 1;
+  }
+}
+
+while (true) 1::day => now;

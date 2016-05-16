@@ -1,4 +1,7 @@
 Machine.add("HSV.ck");
-Machine.add("GridCell.ck");
 <<< "Adding HSV.ck" >>>;
+Machine.add("GridCell.ck");
+<<< "Adding GridCell.ck" >>>;
+Machine.add("ActionEnum.ck");
+<<< "Adding ActionEnum.ck" >>>;
 Machine.add("nameless-server.ck:" + me.arg(0));

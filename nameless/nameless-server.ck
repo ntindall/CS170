@@ -250,9 +250,16 @@ fun void handleAction() {
       acte.getInt() => int actionId;
 
       //if only there were enums
-      if (actionId == 1)
+      if (actionId == ActionEnum.jump())
       {
         //update graphics
+        <<< "Jump received!!! from ", id >>>;
+      }
+
+      if (actionId == ActionEnum.tinkle())
+      {
+        //update graphics
+        <<< "Tinkle received!!! from ", id >>>;
       }
     }
   }
@@ -394,5 +401,6 @@ netinit();
 gridinit();
 
 spork ~handleClient();
+spork ~handleAction();
 
 while (true) 1::day => now;

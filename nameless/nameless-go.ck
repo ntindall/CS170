@@ -137,6 +137,14 @@ fun void xmitMove(int deltaX, int deltaY)
   deltaY => xmit.addInt;
 }
 
+fun void xmitAction(int actionId)
+{
+  xmit.startMsg( "/slork/synch/action", "i i");
+  id => xmit.addInt;
+  actionId => xmit.addInt;
+
+}
+
 fun void client()
 {
 
@@ -164,6 +172,7 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
+        <<< msg.which >>>;
 
         if (msg.which == 44)
         {
@@ -172,16 +181,25 @@ fun void client()
           spork ~drone();
         }
 
-        if ((hasEntered == 1) && (msg.which == 7))
-        {
-          //rearticulate drone
-          spork ~drone();
-        }
-
         if (hasEntered == 1)
         {
+          /************************************************ ARROW KEY CONTROL */
           //d, rearticulate drone
           if (msg.which == 7) spork ~drone();
+
+          //j, send jump
+          if (msg.which == 13)
+          {
+            xmitAction(ActionEnum.jump());
+            spork ~jumpSound();
+          }
+
+          //number pad, send tinkle 
+          if (msg.which >= 30 && msg.which <= 39)
+          {
+            xmitAction(ActionEnum.tinkle());
+            spork ~tinkleSound(msg.which - 30);
+          }
 
           /************************************************ ARROW KEY CONTROL */
           //up
@@ -203,6 +221,19 @@ fun void client()
 /*********************************************************** Sound Production */
 
 Gain globalG => dac;
+
+fun void jumpSound()
+{
+
+}
+
+fun void tinkleSound(int amount)
+{
+  //amount bounded between 0 and 9
+
+}
+
+
 fun void drone()
 {
 
