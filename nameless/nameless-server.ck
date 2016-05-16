@@ -396,6 +396,63 @@ fun void updateGrid()
   if (mutatedGrid == 1) nextGrid @=> grid;
 }
 
+/************************************************************************* IO */
+fun void keyboard()
+{
+    // the device number to open
+  0 => int deviceNum;
+
+  // instantiate a HidIn object
+  HidIn hi;
+  // structure to hold HID messages
+  HidMsg msg;
+
+  // open keyboard
+  if( !hi.openKeyboard( deviceNum ) ) me.exit();
+  // successful! print name of device
+  <<< "keyboard '", hi.name(), "' ready" >>>;
+  // infinite event loop
+
+  while( true )
+  {
+    // wait on event
+    hi => now;
+
+    // get one or more messages
+    while( hi.recv( msg ) )
+    {
+      if (msg.isButtonDown())
+      {
+        <<< msg.which >>>;
+
+        //r
+        if (msg.which == 21)
+        {
+
+        }
+        
+        //g
+        if (msg.which == 10)
+        {
+
+        }
+
+        //b
+        if (msg.which == 5)
+        {
+
+        }
+
+        //y
+        if (msg.which == 28)
+        {
+
+        }
+      }
+    }
+  }
+}
+
 /******************************************************************** Control */
 netinit();
 gridinit();
@@ -403,4 +460,5 @@ gridinit();
 spork ~handleClient();
 spork ~handleAction();
 
-while (true) 1::day => now;
+
+keyboard();

@@ -183,9 +183,13 @@ fun void client()
 
         if (hasEntered == 1)
         {
-          /************************************************ ARROW KEY CONTROL */
+          /********************************************* Player Sound Control */
+
           //d, rearticulate drone
-          if (msg.which == 7) spork ~drone();
+          if (msg.which == 7) 
+          {
+            spork ~drone();
+          }
 
           //j, send jump
           if (msg.which == 13)
@@ -194,7 +198,7 @@ fun void client()
             spork ~jumpSound();
           }
 
-          //number pad, send tinkle 
+          //number pad, send tinkle 0 - 9
           if (msg.which >= 30 && msg.which <= 39)
           {
             xmitAction(ActionEnum.tinkle());
@@ -240,8 +244,9 @@ fun void drone()
   int lpfCutoff;
 
   //determine color type of current cell.. do something (more?) intelligent
-  if (h >= 0 && h < 60 || h > 300)
+  if (HSV.isWarm(h))
   {
+    <<< "here" >>>;
     //warmest
     h => int temp;
     if (temp > 300) 360 - temp => temp;
@@ -251,13 +256,13 @@ fun void drone()
     //bound between 12000 and 3000
 
   }
-  if (h >= 60 && h < 180)
+  if (HSV.isGreen(h))
   {
     3000 - (h - 60)*15 => lpfCutoff;
     //earthy green /yellow/cyan
     //bound to 3000 and 1200
   }
-  if (h >= 180 && h < 300)
+  if (HSV.isCool(h))
   {
     (1200 - (h - 180)*7.5) $ int => lpfCutoff;
     //bound between 1200 and 300
