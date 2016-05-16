@@ -12,7 +12,7 @@ static int N_PLAYERS = 1;
 Blob[] blobs = new Blob[N_PLAYERS];
 
 void setup() {
-  size(960, 540, P2D);
+  size(1920, 1080, P2D);
   smooth(8);
   noStroke();
   noCursor();
