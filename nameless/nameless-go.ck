@@ -123,7 +123,7 @@ fun void network()
 
         <<< pitch, h,s,v >>>;
 
-      //  <<< oe.getString() >>>;
+        <<< oe.getString() >>>;
 
         //signal that global state change has occured
         stateChange.broadcast();
@@ -255,12 +255,24 @@ fun void stateMonitor()
 fun void jumpSound()
 {
 
+
 }
 
 fun void tinkleSound(int amount)
 {
-  //amount bounded between 0 and 9
+  ModalBar tinkler => ResonZ z => globalLPF;
+  tinkler.freq(Std.mtof(pitch));
+  z.freq(Std.mtof(pitch));
 
+  //amount bounded between 0 and 9
+  for (int i; i <= amount; i++)
+  {
+    tinkler.noteOn(1);
+    40::ms => now;
+    tinkler.noteOff(1);
+    40::ms => now;
+
+  }
 }
 
 

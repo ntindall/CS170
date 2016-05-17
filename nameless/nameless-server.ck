@@ -18,8 +18,8 @@ graphicsXmit.setHost ( "localhost", graphicsPort );
 // -------------
 
 // dimensions
-10 => int height;
-10 => int width;
+14 => int height;
+14 => int width;
 
 //zero initialized, heap memory
 new GridCell[height*width] @=> GridCell @ grid[];
@@ -60,7 +60,7 @@ fun void netinit() {
   } else 
   {
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-    2 => targets;
+    1 => targets;
     xmit[0].setHost ( "localhost", port );
    // xmit[1].setHost ( "Nathan.local", port );
     /*
@@ -115,7 +115,7 @@ fun GridCell[] deepCopy (GridCell @ g[])
 }
 
 
-[60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12,66-12,70-12] @=> int scale[];
+[60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12, 66-12, 61-12,60-12, 70-24, 66-24, 65-24, 61-24] @=> int scale[];
 
 fun void gridinit()
 {
@@ -125,8 +125,14 @@ fun void gridinit()
     {
       //calculate index
       y*width + x => int idx;
-
-      scale[x] + y * 12 => grid[idx].pitch;
+      if (y > height / 2)
+      {
+        scale[x] + (height - y) * 12 => grid[idx].pitch;
+      } 
+      else 
+      {
+        scale[x] + y * 12 => grid[idx].pitch;
+      }
     }
   }
 
