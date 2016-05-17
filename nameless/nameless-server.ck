@@ -95,7 +95,7 @@ fun void printGridCell(GridCell @ var)
 
 fun void printPlayerState(int id, PlayerState @ pos) 
 {
-    <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y >>>;
+    <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y, pos.color.toString() >>>;
 }
 
 fun GridCell[] deepCopy (GridCell @ g[])
@@ -170,27 +170,32 @@ fun string printGrid(int targetIdx) {
   return result;
 }
 
+fun void updateClient(int z)
+{
+  positions[z] @=> PlayerState curPlayer; 
+  printPlayerState(z, curPlayer);
+
+  // start the message...
+  //id midi r g b
+  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s" );
+
+  // a message is kicked as soon as it is complete 
+  // - type string is satisfied and bundles are closed
+  z                                   => xmit[z].addInt;
+  grid[curPlayer.y*width+curPlayer.x].pitch => xmit[z].addInt;
+  curPlayer.color.h                            => xmit[z].addInt;
+  curPlayer.color.s                            => xmit[z].addInt;
+  curPlayer.color.v                            => xmit[z].addInt;
+
+  printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
+
+}
+
 fun void updateClients()
 {
   for( 0 => int z; z < targets; z++ ) 
-  {  
-      positions[z] @=> PlayerState curPlayer; 
-      printPlayerState(z, curPlayer);
-      printGridCell(grid[curPlayer.y*width+curPlayer.x]);
-
-      // start the message...
-      //id midi r g b
-      xmit[z].startMsg( "/slork/synch/synth", "i i i i i s" );
-
-      // a message is kicked as soon as it is complete 
-      // - type string is satisfied and bundles are closed
-      z                                   => xmit[z].addInt;
-      grid[curPlayer.y*width+curPlayer.x].pitch => xmit[z].addInt;
-      curPlayer.color.h                            => xmit[z].addInt;
-      curPlayer.color.s                            => xmit[z].addInt;
-      curPlayer.color.v                            => xmit[z].addInt;
-
-      printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
+  {
+    updateClient(z); //no need to spork
   }
 }
 
@@ -363,6 +368,7 @@ fun void gridEvolution()
   }
 }
 
+/*
 fun void updateGrid()
 {
   <<< printGrid(-1) >>>;
@@ -395,6 +401,67 @@ fun void updateGrid()
 
   if (mutatedGrid == 1) nextGrid @=> grid;
 }
+*/
+
+fun void slewIdxColor(int z, int hue)
+{
+  positions[z].color @=> HSV color;
+  hue - color.h       => int hueDelta;
+  20                  => int numSteps;
+
+  //todo, add wraparound logic
+  
+  //only slewing hue for now... keeping it simple? (Maybe let clients control
+  //saturation and value?
+  (hueDelta $ float )/ numSteps   => float stepSize;
+
+  //keep accurate sum in sum, but cast down to appropriate hue 
+  color.h $ float                 => float sum;
+
+  for (int i; i < numSteps; i++)
+  {
+    sum + stepSize => sum;
+
+    //cast down
+    sum $ int => color.h; 
+
+    //let everyone know some slewing has occured!
+    spork ~updateClient(z);
+    //update graphics
+
+    //expected time to completion is 10 seconds
+    Math.random2(1,100)::ms => now;
+  }
+
+  //make sure we didn't mess up
+  hue => color.h;
+  updateClient(z);
+  <<< positions[z].color.toString() >>>;
+}
+
+
+fun void slewColors(int hue) {
+  <<< "slewing" >>>;
+  for( 0 => int z; z < targets; z++ ) 
+  {  
+    //calculate index
+    if (HSV.isWarm(hue))
+    {
+      spork ~slewIdxColor(z, HSV.getWarm());
+    }
+    else if (HSV.isCool(hue))
+    {
+      spork ~slewIdxColor(z, HSV.getCool());
+    }
+    else if (HSV.isGreen(hue))
+    {
+      spork ~slewIdxColor(z, HSV.getGreen());
+    }
+  }
+
+  20::second => now; //wait
+}
+
 
 /************************************************************************* IO */
 fun void keyboard()
@@ -428,19 +495,19 @@ fun void keyboard()
         //r
         if (msg.which == 21)
         {
-
+          spork ~slewColors(HSV.getWarm());
         }
-        
+
         //g
         if (msg.which == 10)
         {
-
+          spork ~slewColors(HSV.getGreen());
         }
 
         //b
         if (msg.which == 5)
         {
-
+          spork ~slewColors(HSV.getCool());
         }
 
         //y

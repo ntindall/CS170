@@ -40,6 +40,11 @@ public class HSV {
     return Math.random2(60,179);
   }
 
+  fun string toString()
+  {
+    return "h " +  h + "s " + s + "v" + v; 
+  }
+
 }
 
 while (true) 1::day => now;
