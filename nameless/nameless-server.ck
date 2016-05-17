@@ -437,6 +437,9 @@ fun void slewIdxColor(int z, int hue)
     if (sum >= 360) 0 => sum;
     if (sum < 0) 359 => sum;
 
+    //in case step size is small, just end.
+    if (sum $ int == color.h) break;
+
     //cast down
     sum $ int => color.h; 
 

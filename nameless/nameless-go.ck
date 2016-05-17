@@ -51,6 +51,7 @@ int s;
 int v;
 
 Event playerMoved;
+Event stateChange;
 
 // osc handle for server
 OscSend xmit;
@@ -122,7 +123,10 @@ fun void network()
 
         <<< pitch, h,s,v >>>;
 
-        <<< oe.getString() >>>;
+      //  <<< oe.getString() >>>;
+
+        //signal that global state change has occured
+        stateChange.broadcast();
       }
   }
 }
@@ -224,7 +228,29 @@ fun void client()
 
 /*********************************************************** Sound Production */
 
-Gain globalG => dac;
+LPF globalLPF => Gain globalG => dac;
+globalLPF.freq(1000);
+
+fun void adjustLPF()
+{
+  int lpfCutoff;
+
+  //wolfram alpha query
+  //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
+
+  0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
+}
+
+fun void stateMonitor()
+{
+  while (true)
+  {
+    //the global variables have shifted, update global warmness settings
+    stateChange => now;
+    <<< globalLPF.freq() >>>;
+    adjustLPF();
+  }
+}
 
 fun void jumpSound()
 {
@@ -240,41 +266,9 @@ fun void tinkleSound(int amount)
 
 fun void drone()
 {
-
-  int lpfCutoff;
-
-  //determine color type of current cell.. do something (more?) intelligent
-  if (HSV.isWarm(h))
-  {
-    <<< "here" >>>;
-    //warmest
-    h => int temp;
-    if (temp > 300) 360 - temp => temp;
-
-    //okay. we have a number between 60 and 0
-    12000 - temp*100 => lpfCutoff;
-    //bound between 12000 and 3000
-
-  }
-  if (HSV.isGreen(h))
-  {
-    3000 - (h - 60)*15 => lpfCutoff;
-    //earthy green /yellow/cyan
-    //bound to 3000 and 1200
-  }
-  if (HSV.isCool(h))
-  {
-    (1200 - (h - 180)*7.5) $ int => lpfCutoff;
-    //bound between 1200 and 300
-    //coolest
-  }
-
-
-  ADSR a => LPF l =>  globalG;
-  l.freq(lpfCutoff);
+  ADSR a => globalLPF;
 
   BeeThree cool => Gain coolGain => a;
-  coolGain.gain(0.1);
   cool.lfoSpeed(1);
   cool.lfoDepth(0.01);
   cool.controlOne(1);
@@ -299,5 +293,6 @@ fun void drone()
   1 => cool.noteOff;
 }
 
+spork ~stateMonitor();
 spork ~network();
 client();
