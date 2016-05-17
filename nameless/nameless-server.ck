@@ -176,7 +176,7 @@ fun void updateClient(int z)
   printPlayerState(z, curPlayer);
 
   // start the message...
-  //id midi r g b
+  //id midi h s v grid
   xmit[z].startMsg( "/slork/synch/synth", "i i i i i s" );
 
   // a message is kicked as soon as it is complete 
@@ -407,10 +407,23 @@ fun void slewIdxColor(int z, int hue)
 {
   positions[z].color @=> HSV color;
   hue - color.h       => int hueDelta;
+
+  //complicated math
+  if (Math.abs(hueDelta) >= 180) 
+  {
+    if (hueDelta < 0)
+    {
+      (hueDelta + 360) => hueDelta;
+    } else if (hueDelta > 0)
+    {
+    -(360 - hueDelta) => hueDelta;
+    }
+  }
+
   20                  => int numSteps;
 
   //todo, add wraparound logic
-  
+
   //only slewing hue for now... keeping it simple? (Maybe let clients control
   //saturation and value?
   (hueDelta $ float )/ numSteps   => float stepSize;
@@ -421,6 +434,8 @@ fun void slewIdxColor(int z, int hue)
   for (int i; i < numSteps; i++)
   {
     sum + stepSize => sum;
+    if (sum >= 360) 0 => sum;
+    if (sum < 0) 359 => sum;
 
     //cast down
     sum $ int => color.h; 
@@ -430,13 +445,12 @@ fun void slewIdxColor(int z, int hue)
     //update graphics
 
     //expected time to completion is 10 seconds
-    Math.random2(1,100)::ms => now;
+    Math.random2(1,1000)::ms => now;
   }
 
   //make sure we didn't mess up
   hue => color.h;
   updateClient(z);
-  <<< positions[z].color.toString() >>>;
 }
 
 
