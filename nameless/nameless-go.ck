@@ -25,6 +25,7 @@ if (me.arg(0) == "")
  - ^v<> keys           to navigate world
  - d                   to rearticulate drone (on your current position)
  - 1-0                 to 'tinkle' (clocked by server)
+ - j                   to 'jump' (clocked by server)
 
 It is possible that the state of the world could change while you are on it.
 The server may change global parameters and notify clients immediately.

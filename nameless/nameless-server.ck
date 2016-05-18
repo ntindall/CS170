@@ -140,22 +140,6 @@ fun void printPlayerState(int id, PlayerState @ pos)
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y, pos.color.toString() >>>;
 }
 
-fun GridCell[] deepCopy (GridCell @ g[])
-{
-  new GridCell[height*width] @=> GridCell @ next[];
-  for( 0 => int y; y < height; y++ ) 
-  {
-    for( 0 => int x; x < width; x++ ) 
-    {
-      y*width + x => int idx;
-
-      g[idx] @=> next[idx];
-    }
-  }
-
-  return next;
-}
-
 fun void gridinit(int which)
 {
 
@@ -369,131 +353,6 @@ fun void g_updatePlayerPos(int id, int x, int y) {
   y => graphicsXmit.addInt;
 }
 
-/*
-fun GridCell avgNeighbors(int x, int y, GridCell @ cel) {
-  GridCell average;
-  cel.who @=> average.who;
-
-  for (-1 => int i; i <= 1; i++)
-  {
-    for (-1 => int j; j <= 1; j++)
-    {
-      if ((i == j) && (i == 0)) continue;
-
-      x + i => int neighX;
-      y + j => int neighY;
-
-      if (neighX > width - 1) 0 => neighX;
-      if (neighX < 0) width - 1 => neighX;
-
-      if (neighY > height - 1) 0 => neighY;
-      if (neighY < 0) height - 1 => neighY;
-
-      neighY * width + neighX => int idx;
-
-      grid[idx].h +=> average.h;
-      grid[idx].s +=> average.s;
-      grid[idx].v +=> average.v;
-      //okay, safe to index now.
-
-    }
-  }
-
-  average.h / 8 => average.h;
-  average.s / 8 => average.s;
-  average.v / 8 => average.v;
-
-  return average;
-}
-*/
-
-fun void gridEvolution()
-{
-  while ( true ) 
-  {
-    <<< printGrid(-1) >>>;
-
-    deepCopy(grid) @=> GridCell @ nextGrid[];
-
-    0 => int mutatedGrid;
-    for( 0 => int y; y < height; y++ ) 
-    {
-      for( 0 => int x; x < width; x++ ) 
-      {
-        //calculate index
-        y*width + x => int idx;
-
-        if (now % 20::second == 0::second && grid[idx].isOccupied()) {
-          <<< "[!]\n[!]\n[!]\n" >>>;
-          <<< "Terraforming!!!" >>>;
-
-          //important note... if grid cell changes while someone is on it, they
-          //will be notified IMMEDIATELY and could potentially spork/create
-          //sound (as they normally would upon a position / pitch change)
-          //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
-          1 => mutatedGrid;
-
-          <<< "[!]\n[!]\n[!]\n" >>>;
-
-        } 
-      }
-    }
-
-    if (mutatedGrid == 1) nextGrid @=> grid;
-
-    //xmit
-    /*
-    for( 0 => int z; z < targets; z++ ) 
-    {  
-      positions[z].y*width + positions[z].x => int idx;
-
-      xmit[z].startMsg( "/slork/io/grid", "s" );
-      printGrid(idx) => xmit[z].addString;
-    }
-    */
-
-    spork ~updateClients();
-
-    //evolution time
-    10::ms => now;
-  }
-}
-
-/*
-fun void updateGrid()
-{
-  <<< printGrid(-1) >>>;
-
-  deepCopy(grid) @=> GridCell @ nextGrid[];
-
-  0 => int mutatedGrid;
-  for( 0 => int y; y < height; y++ ) 
-  {
-    for( 0 => int x; x < width; x++ ) 
-    {
-      //calculate index
-      y*width + x => int idx;
-
-      if (now % 20::second == 0::second && grid[idx].isOccupied()) {
-        <<< "[!]\n[!]\n[!]\n" >>>;
-        <<< "Terraforming!!!" >>>;
-
-        //important note... if grid cell changes while someone is on it, they
-        //will be notified IMMEDIATELY and could potentially spork/create
-        //sound (as they normally would upon a position / pitch change)
-        //avgNeighbors(x, y, grid[idx]) @=> nextGrid[idx];
-        1 => mutatedGrid;
-
-        <<< "[!]\n[!]\n[!]\n" >>>;
-
-      } 
-    }
-  }
-
-  if (mutatedGrid == 1) nextGrid @=> grid;
-}
-*/
-
 fun void slewIdxColor(int z, int hue)
 {
   positions[z].color @=> HSV color;
@@ -513,10 +372,6 @@ fun void slewIdxColor(int z, int hue)
 
   20                  => int numSteps;
 
-  //todo, add wraparound logic
-
-  //only slewing hue for now... keeping it simple? (Maybe let clients control
-  //saturation and value?
   (hueDelta $ float )/ numSteps   => float stepSize;
 
   //keep accurate sum in sum, but cast down to appropriate hue 

@@ -21,3 +21,20 @@ To do:
 - client needs to have a color map
   - more sound sources
 - nathan slew color on server
+
+CLIENT KEYMAP
+ - <SPACE>             to begin / enter world
+ - ^v<> keys           to navigate world
+ - d                   to rearticulate drone (on your current position)
+ - 1-0                 to 'tinkle' (clocked by server)
+ - j                   to 'jump' (clocked by server)
+
+SERVER KEYMAP
+ - g                   to slew to random g
+ - b                   to slew to random b
+ - r                   to slew to random r
+ - y                   <not implemented>
+ - p                   to use pentatonic scale
+ - h                   to use hirajoshi scale
+ - a                   to use aminor
+ - d                   to use dminor
