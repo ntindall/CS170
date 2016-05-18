@@ -142,6 +142,8 @@ fun void xmitMove(int deltaX, int deltaY)
   id => xmit.addInt;
   deltaX => xmit.addInt;
   deltaY => xmit.addInt;
+
+  playerMoved.broadcast();
 }
 
 fun void xmitAction(int actionId)
@@ -181,7 +183,7 @@ fun void client()
       {
         <<< msg.which >>>;
 
-        if (msg.which == 44)
+        if ((msg.which == 44) && (hasEntered == false))
         {
           1 => hasEntered;
           xmitMove(0, 0);
@@ -221,8 +223,6 @@ fun void client()
           if (msg.which == 80) xmitMove(0, -1);
           //right
           if (msg.which == 79) xmitMove(0, 1);
-
-          playerMoved.broadcast();
         }
       }
     }
