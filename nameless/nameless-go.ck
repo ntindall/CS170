@@ -277,8 +277,6 @@ r.mix(0.05);
 
 fun void adjustLPF()
 {
-  int lpfCutoff;
-
   //wolfram alpha query
   //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
 
@@ -322,19 +320,18 @@ fun void tinkleSound(int amount)
 {
   ModalBar tinkler => ResonZ z => globalLPF;
   tinkler.freq(Std.mtof(pitch));
-  z.freq(Std.mtof(pitch) /2);
+  z.freq(Std.mtof(pitch) / 4);
 
   tinkler.controlChange(16, 6);
-  tinkler.damp(0.5);
   tinkler.stickHardness(0);
 
   //amount bounded between 0 and 9
   for (int i; i <= amount; i++)
   {
     clock => now; //sync
-    tinkler.noteOn(1);
-    clock => now;
-    tinkler.noteOff(1);
+    tinkler.strike(Math.random2f(0,1));
+    clock => now; //triple
+    tinkler.damp(Math.random2f(0,1));
   }
 }
 
@@ -342,13 +339,12 @@ fun void tinkleSound(int amount)
 fun void drone()
 {
   ADSR a => globalLPF;
-
   BeeThree cool => Gain coolGain => a;
   cool.lfoSpeed(1);
   cool.lfoDepth(0.01);
-  cool.controlOne(1);
 
   0.1 => coolGain.gain;
+  cool.controlOne(0);
 
   /*
   SqrOsc warm => Gain warmGain => a;
