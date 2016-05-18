@@ -54,9 +54,12 @@ int v;
 
 //init to something reasonable
 20000 => int attackMs;
-0  => int decayMs;
-1  => float sustainGain;
+0     => int decayMs;
+1     => float sustainGain;
 10000 => int releaseMs;
+
+0.1   => float coolGain;
+0     => float warmGain;
 
 Event playerMoved;
 Event stateChange;
@@ -89,8 +92,8 @@ xmit.setHost ( host, port );
 fun void network()
 {
   // create an address in the receiver, store in new variable
-  //id pitch r g b
-  recv.event( "/slork/synch/synth, i i i i i s i i f i" ) @=> OscEvent oe;
+  //id pitch r g b a d s r coolgain warmgain
+  recv.event( "/slork/synch/synth, i i i i i s i i f i f f" ) @=> OscEvent oe;
 
   // count
   0 => int count;
@@ -135,10 +138,13 @@ fun void network()
 
         <<< oe.getString() >>>;
 
-        oe.getInt() => attackMs;
-        oe.getInt() => decayMs;
+        oe.getInt()   => attackMs;
+        oe.getInt()   => decayMs;
         oe.getFloat() => sustainGain;
-        oe.getInt() => releaseMs;
+        oe.getInt()   => releaseMs;
+
+        oe.getFloat() => coolGain;
+        oe.getFloat() => warmGain;
 
         //signal that global state change has occured
         stateChange.broadcast();
@@ -339,31 +345,46 @@ fun void tinkleSound(int amount)
 fun void drone()
 {
   ADSR a => globalLPF;
-  BeeThree cool => Gain coolGain => a;
-  cool.lfoSpeed(1);
-  cool.lfoDepth(0.01);
+  
+  //* warm osc */
+  BeeThree warm => Gain warmG => a;
+  warm.lfoSpeed(1);
+  warm.lfoDepth(0.01);
+  warm.controlOne(0);
 
-  0.1 => coolGain.gain;
-  cool.controlOne(0);
+  Flute blue => Gain blueG => a;
 
-  /*
-  SqrOsc warm => Gain warmGain => a;
-  warmGain.gain(0.1);
-  */
+  /* Gain adjust */
+  warmGain   => warmG.gain;
+  coolGain   => blueG.gain;
 
-  1 => cool.noteOn;
+  /* Pitch selection */
+  Std.mtof(pitch) => warm.freq;
+  Std.mtof(pitch) / 2=> blue.freq;
+
+  /* ADSR Tuning (controlled by server) */
+
+  //ephemeral, have to cache
+  releaseMs::ms => dur releaseTime;
+
   a.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
-  Std.mtof(pitch) => cool.freq;
+
+  /* Patch */
+  1 => warm.noteOn;
+  1 => blue.noteOn;
+
+  //sync!
+  clock => now;
 
   a.keyOn();
-  // 10::second => now;
-
   playerMoved => now;
-
   a.keyOff();
-  10::second => now;
 
-  1 => cool.noteOff;
+  //release
+  releaseTime => now;
+
+  1 => warm.noteOff;
+  1 => blue.noteOff;
 }
 
 spork ~clockBroadcast();

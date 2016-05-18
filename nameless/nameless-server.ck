@@ -11,6 +11,9 @@
 1  => float sustainGain;
 10000 => int releaseMs;
 
+0.1 => float warmGain;
+0   => float coolGain;
+
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
 int hirajoshi[width];
@@ -45,8 +48,8 @@ fun void initscales()
   [C-24, D-24, E-24, G-24, A-24, C-12, D-12, E-12, G-12, 
          E-12, D-12, C-24, G-24, D-24] @=> pentatonic;
 
-  [A-36, C-24, E-24, A-24, C-24, D-12, E-12, A-12, E-12, 
-         C-12, B-12, A-24, D-24, C-24] @=> aminor;
+  [A-36, C-24, E-24, A-24, C-12, D-12, E-12, A-12, E-12, 
+         C-12, B-24, A-24, D-24, C-24] @=> aminor;
 
   [D-36, A-36, C-24, D-24, F-24, A-12, D-12, A-12, F-12, 
          D-12, A-24, F-24, E-24, D-24] @=> dminor;
@@ -233,8 +236,8 @@ fun void updateClient(int z)
   printPlayerState(z, curPlayer);
 
   // start the message...
-  //id midi h s v grid a d s r
-  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i" );
+  //id midi h s v grid a d s r coolGain warmGain
+  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i f f" );
 
   // a message is kicked as soon as it is complete 
   // - type string is satisfied and bundles are closed
@@ -246,11 +249,14 @@ fun void updateClient(int z)
 
   printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
 
-  attackMs  => xmit[z].addInt;
-  decayMs   => xmit[z].addInt;
+  attackMs       => xmit[z].addInt;
+  decayMs        => xmit[z].addInt;
   sustainGain    => xmit[z].addFloat;
-  releaseMs => xmit[z].addInt; 
-
+  releaseMs      => xmit[z].addInt; 
+     
+  coolGain       => xmit[z].addFloat;
+  warmGain       => xmit[z].addFloat;
+     
 }
 
 fun void updateClients()
@@ -561,6 +567,31 @@ fun void keyboard()
           100  => decayMs;
           0.1  => sustainGain;
           1000 => releaseMs;
+        }
+
+        //,
+        if (msg.which == 54)
+        {
+          warmGain - 0.01 => warmGain;
+          coolGain + 0.01 => coolGain;
+
+          if (warmGain < 0) 0 => warmGain;
+          if (coolGain > 0.1) 0.1 => coolGain;
+
+          <<< "Cool gain: ", coolGain, "Warm gain:", warmGain >>>; 
+        }
+
+        //.
+        if (msg.which == 55)
+        {
+          warmGain + 0.01 => warmGain;
+          coolGain - 0.01 => coolGain;
+
+          if (warmGain > 0.1) 0.1 => warmGain;
+          if (coolGain < 0) 0 => coolGain;
+
+          <<< "Cool gain: ", coolGain, "Warm gain:", warmGain >>>; 
+
         }
       }
     }
