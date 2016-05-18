@@ -2,6 +2,52 @@
 // value of clock
 8000::samp => dur T;
 
+// dimensions
+14 => int height;
+14 => int width;
+
+/********************************************************************* Scales */
+11 => int HIRAJOSHI;
+int hirajoshi[width];
+
+19 => int PENTATONIC;
+int pentatonic[width];
+
+4 => int AMINOR; //sus2
+int aminor[width];
+
+7 => int DMINOR;
+int dminor[width];
+
+fun void initscales()
+{
+  60 => int C;
+  61 => int Db;
+  62 => int D; 
+  63 => int Eb;
+  64 => int E;
+  65 => int F; 
+  66 => int Gb; 
+  67 => int G; 
+  68 => int Ab;
+  69 => int A;
+  70 => int Bb;
+  71 => int B;
+
+  [C-24, E-24, Gb-24, G-24, B-24, C-12, E-12, Gb-12, G-12, 
+         E-12, C-12, B-24, G-24, E-24] @=> hirajoshi;
+
+  [C-24, D-24, E-24, G-24, A-24, C-12, D-12, E-12, G-12, 
+         E-12, D-12, C-24, G-24, D-24] @=> pentatonic;
+
+  [A-36, C-24, E-24, A-24, C-24, D-12, E-12, A-12, E-12, 
+         C-12, B-12, A-24, D-24, C-24] @=> aminor;
+
+  [D-36, A-36, C-24, D-24, F-24, A-12, D-12, A-12, F-12, 
+         D-12, A-24, F-24, E-24, D-24] @=> dminor;
+
+}
+
 /************************************************* Global Grid Initialization */
 
 // -------------
@@ -16,10 +62,6 @@ OscSend graphicsXmit;
 graphicsXmit.setHost ( "localhost", graphicsPort ); 
 
 // -------------
-
-// dimensions
-14 => int height;
-14 => int width;
 
 //zero initialized, heap memory
 new GridCell[height*width] @=> GridCell @ grid[];
@@ -114,11 +156,35 @@ fun GridCell[] deepCopy (GridCell @ g[])
   return next;
 }
 
-
-[60-24,61-24,65-24,66-24,70-24,60-12,61-12,65-12, 66-12, 61-12,60-12, 70-24, 66-24, 65-24, 61-24] @=> int scale[];
-
-fun void gridinit()
+fun void gridinit(int which)
 {
+
+  int scale[];
+
+  if (which == HIRAJOSHI) 
+  {
+    hirajoshi @=> scale;
+    <<< "Scale: HIRAJOSHI" >>>;
+  }
+
+  if (which == PENTATONIC)
+  {
+    pentatonic @=> scale;
+    <<< "Scale: PENTATONIC" >>>;
+  } 
+
+  if (which == AMINOR)
+  {
+    aminor @=> scale;
+    <<< "Scale: AMINOR" >>>;
+  }
+
+  if (which == DMINOR)
+  {
+    dminor @=> scale;
+    <<< "Scale: DMINOR" >>>;
+  }
+
   for( 0 => int y; y < height; y++ ) 
   {
     for( 0 => int x; x < width; x++ ) 
@@ -135,7 +201,10 @@ fun void gridinit()
       }
     }
   }
+}
 
+fun void targetinit()
+{
   for (int i; i < targets; i++)
   {
     // Math.random2(0,width - 1) => positions[i].x;
@@ -554,6 +623,36 @@ fun void keyboard()
         {
 
         }
+
+        // SCALE SHIFTING
+        //p
+        if (msg.which == PENTATONIC)
+        {
+          //shift to pentatonic scale
+          spork ~gridinit(PENTATONIC);
+        }
+
+        //p
+        if (msg.which == HIRAJOSHI)
+        {
+          //shift to hirajoshi scale
+          spork ~gridinit(HIRAJOSHI);
+        }
+
+        //a
+        if (msg.which == AMINOR)
+        {
+          //shift to hirajoshi scale
+          spork ~gridinit(AMINOR);
+        }
+
+        //d
+        if (msg.which == DMINOR)
+        {
+          //shift to hirajoshi scale
+          spork ~gridinit(DMINOR);
+        }
+
       }
     }
   }
@@ -561,7 +660,9 @@ fun void keyboard()
 
 /******************************************************************** Control */
 netinit();
-gridinit();
+initscales();
+gridinit(HIRAJOSHI);
+targetinit(); 
 
 spork ~handleClient();
 spork ~handleAction();
