@@ -38,3 +38,4 @@ SERVER KEYMAP
  - h                   to use hirajoshi scale
  - a                   to use aminor
  - d                   to use dminor
+ - zxcv                to set ADSR presets on all clients

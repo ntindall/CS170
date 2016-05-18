@@ -6,6 +6,11 @@
 14 => int height;
 14 => int width;
 
+20000 => int attackMs;
+0  => int decayMs;
+1  => float sustainGain;
+10000 => int releaseMs;
+
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
 int hirajoshi[width];
@@ -235,8 +240,8 @@ fun void updateClient(int z)
   printPlayerState(z, curPlayer);
 
   // start the message...
-  //id midi h s v grid
-  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s" );
+  //id midi h s v grid a d s r
+  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i" );
 
   // a message is kicked as soon as it is complete 
   // - type string is satisfied and bundles are closed
@@ -247,6 +252,11 @@ fun void updateClient(int z)
   curPlayer.color.v                            => xmit[z].addInt;
 
   printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
+
+  attackMs  => xmit[z].addInt;
+  decayMs   => xmit[z].addInt;
+  sustainGain    => xmit[z].addFloat;
+  releaseMs => xmit[z].addInt; 
 
 }
 
@@ -497,17 +507,58 @@ fun void keyboard()
         //a
         if (msg.which == AMINOR)
         {
-          //shift to hirajoshi scale
+          //shift to aminor scale
           spork ~gridinit(AMINOR);
         }
 
         //d
         if (msg.which == DMINOR)
         {
-          //shift to hirajoshi scale
+          //shift to dminor scale
           spork ~gridinit(DMINOR);
         }
 
+        //ADSR control
+
+        //z
+        if (msg.which == 29)
+        {
+          <<< "A: 20000 D: 0     S: 1 R: 10000" >>>;
+          20000 => attackMs;
+          0     => decayMs;
+          1     => sustainGain;
+          10000 => releaseMs;
+        }
+
+        //x
+        if (msg.which == 27)
+        {
+          <<< "A: 10000 D: 10000 S: 0.1 R: 10000" >>>;
+          10000 => attackMs;
+          10000 => decayMs;
+          0.1     => sustainGain;
+          5000 => releaseMs;
+        }
+
+        //c
+        if (msg.which == 6)
+        {
+          <<< "A: 1000  D: 1000  S: 0.8 R: 1000" >>>;
+          1000  => attackMs;
+          1000  => decayMs;
+          0.8  => sustainGain;
+          1000 => releaseMs;
+        }
+
+        //v
+        if (msg.which == 25)
+        {
+          <<< "A: 100   D: 100   S: 0.1 R: 1000" >>>;
+          100  => attackMs;
+          100  => decayMs;
+          0.1  => sustainGain;
+          1000 => releaseMs;
+        }
       }
     }
   }
