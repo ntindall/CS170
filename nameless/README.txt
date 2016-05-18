@@ -39,5 +39,5 @@ SERVER KEYMAP
  - a                   to use aminor
  - d                   to use dminor
  - zxcv                to set ADSR presets on all clients
- - ,                   increase gain balance to COOL
- - .                   increase gain balance to warm
+ - ,                   increase gain balance to cool (client oscillators)
+ - .                   increase gain balance to warm (client oscillators)
