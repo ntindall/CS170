@@ -52,6 +52,12 @@ int h;
 int s;
 int v;
 
+//init to something reasonable
+20000 => int attackMs;
+0  => int decayMs;
+1  => float sustainGain;
+10000 => int releaseMs;
+
 Event playerMoved;
 Event stateChange;
 Event clock;
@@ -84,7 +90,7 @@ fun void network()
 {
   // create an address in the receiver, store in new variable
   //id pitch r g b
-  recv.event( "/slork/synch/synth, i i i i i s" ) @=> OscEvent oe;
+  recv.event( "/slork/synch/synth, i i i i i s i i f i" ) @=> OscEvent oe;
 
   // count
   0 => int count;
@@ -128,6 +134,11 @@ fun void network()
         <<< pitch, h,s,v >>>;
 
         <<< oe.getString() >>>;
+
+        oe.getInt() => attackMs;
+        oe.getInt() => decayMs;
+        oe.getFloat() => sustainGain;
+        oe.getInt() => releaseMs;
 
         //signal that global state change has occured
         stateChange.broadcast();
@@ -311,7 +322,7 @@ fun void tinkleSound(int amount)
 {
   ModalBar tinkler => ResonZ z => globalLPF;
   tinkler.freq(Std.mtof(pitch));
-  z.freq(Std.mtof(pitch/2));
+  z.freq(Std.mtof(pitch) /2);
 
   tinkler.controlChange(16, 6);
   tinkler.damp(0.5);
@@ -337,13 +348,15 @@ fun void drone()
   cool.lfoDepth(0.01);
   cool.controlOne(1);
 
+  0.1 => coolGain.gain;
+
   /*
   SqrOsc warm => Gain warmGain => a;
   warmGain.gain(0.1);
   */
 
   1 => cool.noteOn;
-  a.set(20::second, 0::second, 1, 10::second);
+  a.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
   Std.mtof(pitch) => cool.freq;
 
   a.keyOn();
