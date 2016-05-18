@@ -1,24 +1,29 @@
 class Blob {
   float x, y, radius;
+  float startX, startY, stepSize;
   int id;
   Colors colors = new Colors();
   float alpha = 0;
   float halo = 0;
 
-  Blob(int _id) {
-    x = 300;
-    y = 400;
+  Blob(int _id, float _x, float _y, float _size) {
+    stepSize = _size;
+    float offset = stepSize / 2;
+    startX = _x + offset;
+    startY = _y - offset;
     radius = 10;
+    x = startX;
+    y = startY;
     id = _id;
   }
 
   void setX(float x) {
-    float _x = 300 + (50 * x);
+    float _x = startX + (stepSize * x);
     Ani.to(this, 5, "x", _x);
   }
 
   void setY(float y) {
-    float _y = 400 - (50 * y);
+    float _y = startY - (stepSize * y);
     Ani.to(this, 5, "y", _y);
   }
 

@@ -6,10 +6,18 @@ OscP5 oscP5;
 
 // data
 Colors colors = new Colors();
-static int N_PLAYERS = 2;
+
+// update variables as per world
+int N_PLAYERS = 1;
+int WIDTH = 14;
+int HEIGHT = 14;
+
+float WORLD_SIZE = 960;
+float CELL_SIZE = WORLD_SIZE / WIDTH;
 
 // geometry
 Blob[] blobs = new Blob[N_PLAYERS];
+Grid grid;
 
 void setup() {
   size(1920, 1080, P2D);
@@ -33,6 +41,7 @@ void setup() {
    * message with address pattern /test and typetag ii will be forwarded to
    * the method test(int theA, int theB)
    */
+  oscP5.plug(this, "setupWorld", "/nameless/graphics/init");
   oscP5.plug(this, "updatePlayer", "/nameless/graphics/position");
 }
 
@@ -44,13 +53,36 @@ void draw() {
     if (blob != null)
       blob.draw();
   }
+
+  if (grid != null)
+    grid.draw();
 }
 
 void initWorld() {
+  float _x = (width / 2) - (WORLD_SIZE / 2);
+  float _y = (height / 2) + (WORLD_SIZE / 2);
+
   for (int id = 0; id < N_PLAYERS; ++id) {
-    blobs[id] = new Blob(id);
+    blobs[id] = new Blob(id, _x, _y, CELL_SIZE);
     blobs[id].show();
   }
+
+  grid = new Grid(WIDTH, WORLD_SIZE, CELL_SIZE, _x, _y);
+
+  println("players: "+N_PLAYERS);
+}
+
+void setupWorld(int n, int width, int height) {
+  if (n != N_PLAYERS) {
+    N_PLAYERS = n;
+    blobs = new Blob[N_PLAYERS];
+  }
+
+  if (height != HEIGHT)
+    HEIGHT = height;
+
+  if (width != WIDTH)
+    WIDTH = width;
 }
 
 void updatePlayer(int id, int x, int y) {

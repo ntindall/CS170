@@ -45,23 +45,9 @@ fun void initscales()
 
   [D-36, A-36, C-24, D-24, F-24, A-12, D-12, A-12, F-12, 
          D-12, A-24, F-24, E-24, D-24] @=> dminor;
-
 }
 
 /************************************************* Global Grid Initialization */
-
-// -------------
-// graphics init
-// -------------
-// send objects
-OscSend graphicsXmit;
-// port
-4242 => int graphicsPort;
-
-// aim the transmitter at port
-graphicsXmit.setHost ( "localhost", graphicsPort ); 
-
-// -------------
 
 //zero initialized, heap memory
 new GridCell[height*width] @=> GridCell @ grid[];
@@ -77,6 +63,13 @@ class PlayerState {
 }
 
 /***************************************************** Network Initialization */
+// graphics OSC object
+OscSend graphicsXmit;
+// port
+4242 => int graphicsPort;
+
+// aim the transmitter at port
+graphicsXmit.setHost("localhost", graphicsPort); 
 
 // send objects
 OscSend xmit[16];
@@ -346,13 +339,6 @@ fun void handleAction() {
 
 }
 
-fun void g_updatePlayerPos(int id, int x, int y) {
-  graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
-  id => graphicsXmit.addInt;
-  x => graphicsXmit.addInt;
-  y => graphicsXmit.addInt;
-}
-
 fun void slewIdxColor(int z, int hue)
 {
   positions[z].color @=> HSV color;
@@ -426,10 +412,27 @@ fun void slewColors(int hue) {
 }
 
 
+/************************************************************************* Graphics */
+
+fun void g_init() {
+  graphicsXmit.startMsg("/nameless/graphics/init", "i i i");
+  targets => graphicsXmit.addInt;
+  width => graphicsXmit.addInt;
+  height => graphicsXmit.addInt;
+}
+
+fun void g_updatePlayerPos(int id, int x, int y) {
+  graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
+  id => graphicsXmit.addInt;
+  x => graphicsXmit.addInt;
+  y => graphicsXmit.addInt;
+}
+
+
 /************************************************************************* IO */
 fun void keyboard()
 {
-    // the device number to open
+  // the device number to open
   0 => int deviceNum;
 
   // instantiate a HidIn object
@@ -517,7 +520,9 @@ fun void keyboard()
 netinit();
 initscales();
 gridinit(HIRAJOSHI);
-targetinit(); 
+targetinit();
+
+g_init();
 
 spork ~handleClient();
 spork ~handleAction();
