@@ -52,6 +52,15 @@ int v;
 
 Event playerMoved;
 Event stateChange;
+Event clock;
+
+// create our OSC receiver
+OscRecv recv;
+// use port 6449
+6449 => recv.port;
+// start listening (launch thread)
+recv.listen();
+<<< "OscRecv: listening on 6449" >>>;
 
 // osc handle for server
 OscSend xmit;
@@ -71,13 +80,6 @@ xmit.setHost ( host, port );
 // receiver
 fun void network()
 {
-  // create our OSC receiver
-  OscRecv recv;
-  // use port 6449
-  6449 => recv.port;
-  // start listening (launch thread)
-  recv.listen();
-
   // create an address in the receiver, store in new variable
   //id pitch r g b
   recv.event( "/slork/synch/synth, i i i i i s" ) @=> OscEvent oe;
@@ -252,6 +254,22 @@ fun void stateMonitor()
   }
 }
 
+fun void clockMonitor()
+{
+  recv.event( "/slork/synch/clock" ) @=> OscEvent ce;
+
+  while (true)
+  {  
+      // wait for event to arrive
+      ce => now;
+
+      if (ce.nextMsg() != 0)
+      {
+        clock.broadcast();
+      }
+  }
+}
+
 fun void jumpSound()
 {
 
@@ -262,15 +280,15 @@ fun void tinkleSound(int amount)
 {
   ModalBar tinkler => ResonZ z => globalLPF;
   tinkler.freq(Std.mtof(pitch));
-  z.freq(Std.mtof(pitch));
+  z.freq(Std.mtof(pitch/2));
 
   //amount bounded between 0 and 9
   for (int i; i <= amount; i++)
   {
     tinkler.noteOn(1);
-    40::ms => now;
+    clock => now;
     tinkler.noteOff(1);
-    40::ms => now;
+    clock => now;
 
   }
 }
@@ -305,6 +323,7 @@ fun void drone()
   1 => cool.noteOff;
 }
 
+spork ~clockMonitor();
 spork ~stateMonitor();
 spork ~network();
 client();

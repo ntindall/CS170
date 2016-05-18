@@ -1,5 +1,5 @@
 
-// value of 8th
+// value of clock
 4096::samp => dur T;
 
 /************************************************* Global Grid Initialization */
@@ -203,6 +203,22 @@ fun void updateClients()
   {
     updateClient(z); //no need to spork
   }
+}
+
+fun void sendClock() {
+
+  while (true)
+  {
+    for (int z; z < targets; z++)
+    {
+      // a message is kicked as soon as it is complete 
+      xmit[z].startMsg( "/slork/synch/clock");
+    }
+
+    //clock speed tunable by T
+    T => now;
+  }
+
 }
 
 fun void handleClient()
@@ -549,6 +565,7 @@ gridinit();
 
 spork ~handleClient();
 spork ~handleAction();
+spork ~sendClock();
 
 
 keyboard();
