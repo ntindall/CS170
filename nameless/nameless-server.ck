@@ -1,6 +1,6 @@
 
 // value of clock
-4096::samp => dur T;
+8000::samp => dur T;
 
 /************************************************* Global Grid Initialization */
 

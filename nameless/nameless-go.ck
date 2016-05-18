@@ -24,6 +24,7 @@ if (me.arg(0) == "")
  - <SPACE>             to begin / enter world
  - ^v<> keys           to navigate world
  - d                   to rearticulate drone (on your current position)
+ - 1-0                 to 'tinkle' (clocked by server)
 
 It is possible that the state of the world could change while you are on it.
 The server may change global parameters and notify clients immediately.
@@ -228,20 +229,7 @@ fun void client()
   }
 }
 
-/*********************************************************** Sound Production */
-
-LPF globalLPF => Gain globalG => dac;
-globalLPF.freq(1000);
-
-fun void adjustLPF()
-{
-  int lpfCutoff;
-
-  //wolfram alpha query
-  //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
-
-  0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
-}
+/********************************************************************** Synch */
 
 fun void stateMonitor()
 {
@@ -249,12 +237,11 @@ fun void stateMonitor()
   {
     //the global variables have shifted, update global warmness settings
     stateChange => now;
-    <<< globalLPF.freq() >>>;
     adjustLPF();
   }
 }
 
-fun void clockMonitor()
+fun void clockBroadcast()
 {
   recv.event( "/slork/synch/clock" ) @=> OscEvent ce;
 
@@ -270,10 +257,53 @@ fun void clockMonitor()
   }
 }
 
+/*********************************************************** Sound Production */
+
+LPF globalLPF => Gain globalG => NRev r => dac;
+globalLPF.freq(1000);
+r.mix(0.05);
+
+fun void adjustLPF()
+{
+  int lpfCutoff;
+
+  //wolfram alpha query
+  //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
+
+  0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
+}
+
 fun void jumpSound()
 {
+  ModalBar m1 => Gain g;
+  ModalBar m2 => g;
 
+  m1.controlChange(16,0);
+  m2.controlChange(16,0);
 
+  0 => m1.stickHardness => m2.stickHardness;
+
+  g => LPF l => globalLPF;
+
+  l.freq(2000);
+
+  pitch => int realpitch;
+  if (pitch > 40) pitch - 12 => realpitch; 
+
+  m1.freq(Std.mtof(realpitch));
+  m2.freq(Std.mtof(realpitch + 7)); //fifth
+
+  clock => now;
+
+  for (int i; i < 2; i++)
+  {
+    m1.strike(1);
+    m2.strike(1);
+    clock => now;
+    clock => now;
+  }
+
+  1::second => now;
 }
 
 fun void tinkleSound(int amount)
@@ -282,14 +312,17 @@ fun void tinkleSound(int amount)
   tinkler.freq(Std.mtof(pitch));
   z.freq(Std.mtof(pitch/2));
 
+  tinkler.controlChange(16, 6);
+  tinkler.damp(0.5);
+  tinkler.stickHardness(0);
+
   //amount bounded between 0 and 9
   for (int i; i <= amount; i++)
   {
+    clock => now; //sync
     tinkler.noteOn(1);
     clock => now;
     tinkler.noteOff(1);
-    clock => now;
-
   }
 }
 
@@ -323,7 +356,7 @@ fun void drone()
   1 => cool.noteOff;
 }
 
-spork ~clockMonitor();
+spork ~clockBroadcast();
 spork ~stateMonitor();
 spork ~network();
 client();
