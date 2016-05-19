@@ -1,6 +1,6 @@
 
 // value of clock
-8000::samp => dur T;
+4000::samp => dur T;
 
 // dimensions
 14 => int height;
