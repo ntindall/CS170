@@ -41,3 +41,10 @@ SERVER KEYMAP
  - zxcv                to set ADSR presets on all clients
  - ,                   increase gain balance to cool (client oscillators)
  - .                   increase gain balance to warm (client oscillators)
+
+ GESTURES
+ - RAIN:     everyone drift downwards
+ - ARP:      everyone drift to the right
+ - TINKLE:   numbers 1-0 control number of tinkles (can strike successively)
+ - JUMP:     percussive effect
+ - DRIFT:    find a place sonically pleasing

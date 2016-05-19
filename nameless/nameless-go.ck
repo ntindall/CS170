@@ -32,6 +32,13 @@ The server may change global parameters and notify clients immediately.
 
 By moving to a new cell, you will generate a tone. The envelope of the tone is
 tuned by the server. Some envelopes will tend towards more or less movement.
+
+ GESTURES
+ - RAIN:     everyone drift downwards
+ - ARP:      everyone drift to the right
+ - TINKLE:   numbers 1-0 control number of tinkles (can strike successively)
+ - JUMP:     percussive effect
+ - DRIFT:    find a place sonically pleasing
 "
 >>>;
 
@@ -315,8 +322,7 @@ fun void jumpSound()
   {
     m1.strike(1);
     m2.strike(1);
-    clock => now;
-    clock => now;
+    for (int i; i < 4; i++ ) clock => now;
   }
 
   1::second => now;
@@ -325,20 +331,30 @@ fun void jumpSound()
 fun void tinkleSound(int amount)
 {
   ModalBar tinkler => ResonZ z => globalLPF;
-  tinkler.freq(Std.mtof(pitch));
-  z.freq(Std.mtof(pitch) / 4);
+  tinkler => globalLPF;
+
+  pitch => int realpitch;
+  while (realpitch < 60 || realpitch > 80)
+  {
+    if (realpitch < 60) realpitch + 12 => realpitch;
+    if (realpitch > 80) realpitch - 36 => realpitch;
+  }
+
+  tinkler.freq(Std.mtof(realpitch));
+  z.freq(Std.mtof(realpitch));
 
   tinkler.controlChange(16, 6);
   tinkler.stickHardness(0);
 
   //amount bounded between 0 and 9
-  for (int i; i <= amount; i++)
+  for (int i; i <= amount * 2; i++)
   {
     clock => now; //sync
     tinkler.strike(Math.random2f(0,1));
     clock => now; //triple
     tinkler.damp(Math.random2f(0,1));
   }
+  clock => now;
 }
 
 
