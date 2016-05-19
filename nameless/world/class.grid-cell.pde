@@ -38,7 +38,7 @@ class GridCell {
     println("dur: "+dur);
 
     state = 1;
-    Ani.to(this, dur, "aIn", 100, Ani.CUBIC_IN_OUT);
+    Ani.to(this, dur, "aIn", 100, Ani.QUART_OUT);
   }
 
   void fadeOut(float t) {
@@ -66,8 +66,8 @@ class GridCell {
     else
       _a = 0;
 
-    if (_a != 0)
-      println("_a: "+_a);
+    // if (_a != 0)
+    //   println("_a: "+_a);
 
     cell.setFill(color(h, s, b, _a));
     shape(cell);

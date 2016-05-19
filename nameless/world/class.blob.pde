@@ -38,11 +38,11 @@ class Blob {
   }
 
   void show() {
-    Ani.to(this, 2, "alpha", 255);
+    Ani.to(this, 2, "alpha", 100);
   }
 
   void draw() {
-    fill(color(0, 0, 100, 10));
+    fill(color(0, 0, 100, 10 * (alpha / 100)));
     ellipse(x, y, radius * (1 + halo), radius * (1 + halo));
     fill(col, alpha);
     ellipse(x, y, radius, radius);

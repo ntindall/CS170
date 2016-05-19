@@ -362,6 +362,13 @@ fun void handleAction() {
         //update graphics
         <<< "Tinkle received!!! from ", id >>>;
       }
+
+      if (actionId == ActionEnum.enter())
+      {
+        //update graphics
+        <<< "Player ", id + " entered grid!" >>>;
+        spork ~g_showPlayer(id);
+      }
     }
   }
 
@@ -451,8 +458,13 @@ fun void g_init() {
   height => graphicsXmit.addInt;
 }
 
+fun void g_showPlayer(int id) {
+  graphicsXmit.startMsg("/nameless/graphics/player/enter", "i");
+  id => graphicsXmit.addInt;
+}
+
 fun void g_updatePlayer(int id) {
-  graphicsXmit.startMsg("/nameless/graphics/player", "i i i i i i");
+  graphicsXmit.startMsg("/nameless/graphics/player/move", "i i i i i i");
   id => graphicsXmit.addInt;
   positions[id].x => graphicsXmit.addInt;
   positions[id].y => graphicsXmit.addInt;

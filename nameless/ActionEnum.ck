@@ -10,6 +10,11 @@ public class ActionEnum {
   {
     return 1;
   }
+
+  fun static int enter()
+  {
+    return -1;
+  }
 }
 
 while (true) 1::day => now;

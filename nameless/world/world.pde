@@ -43,7 +43,8 @@ void setup() {
    * the method test(int theA, int theB)
    */
   oscP5.plug(this, "setupWorld", "/nameless/graphics/init");
-  oscP5.plug(this, "updatePlayer", "/nameless/graphics/player");
+  oscP5.plug(this, "updatePlayer", "/nameless/graphics/player/move");
+  oscP5.plug(this, "showPlayer", "/nameless/graphics/player/enter");
   oscP5.plug(this, "cellFadeIn", "/nameless/graphics/cell/fadeIn");
   oscP5.plug(this, "cellFadeOut", "/nameless/graphics/cell/fadeOut");
 }
@@ -67,7 +68,7 @@ void initWorld() {
 
   for (int id = 0; id < N_PLAYERS; ++id) {
     blobs[id] = new Blob(id, _x, _y, CELL_SIZE);
-    blobs[id].show();
+    // blobs[id].show();
   }
 
   grid = new Grid(WIDTH, N_PLAYERS, WORLD_SIZE, CELL_SIZE, _x, _y);
@@ -86,6 +87,10 @@ void setupWorld(int n, int width, int height) {
 
   if (width != WIDTH)
     WIDTH = width;
+}
+
+void showPlayer(int id) {
+  blobs[id].show();
 }
 
 void updatePlayer(int id, int x, int y, int h, int s, int b) {

@@ -211,6 +211,7 @@ fun void client()
         if ((msg.which == 44) && (hasEntered == false))
         {
           1 => hasEntered;
+          xmitAction(ActionEnum.enter());
           xmitMove(0, 0);
           spork ~drone();
         }
