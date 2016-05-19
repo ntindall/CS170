@@ -196,6 +196,10 @@ fun void targetinit()
     // Math.random2(0,height - 1) => positions[i].y;
     0 => positions[i].x;
     0 => positions[i].y;
+
+    positions[i].color.getWarm() => positions[i].color.h;
+    100 => positions[i].color.s;
+    50 => positions[i].color.v;
   }
 }
 
@@ -256,7 +260,6 @@ fun void updateClient(int z)
      
   coolGain       => xmit[z].addFloat;
   warmGain       => xmit[z].addFloat;
-     
 }
 
 fun void updateClients()
@@ -302,6 +305,9 @@ fun void handleClient()
       //unset occupied for old position
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
+      // toggle old gridcell to fade out
+      spork ~g_cellFadeOut(id, positions[id].x, positions[id].y);
+
       //get x
       positions[id].x + dX => positions[id].x;
 
@@ -318,7 +324,13 @@ fun void handleClient()
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
 
-      spork ~g_updatePlayerPos(id, positions[id].x, positions[id].y);
+      // update player graphics
+      spork ~g_updatePlayer(id);
+
+      // toggle new gridcell to fade in
+      spork ~g_cellFadeIn(id, positions[id].x, positions[id].y);
+
+      // update clients
       spork ~updateClients();
     }
   }
@@ -393,7 +405,9 @@ fun void slewIdxColor(int z, int hue)
 
     //let everyone know some slewing has occured!
     spork ~updateClient(z);
-    //update graphics
+
+    // update graphics with player color
+    g_updatePlayer(z);
 
     //expected time to completion is 10 seconds
     Math.random2(1,1000)::ms => now;
@@ -437,11 +451,30 @@ fun void g_init() {
   height => graphicsXmit.addInt;
 }
 
-fun void g_updatePlayerPos(int id, int x, int y) {
-  graphicsXmit.startMsg("/nameless/graphics/position", "i i i");
+fun void g_updatePlayer(int id) {
+  graphicsXmit.startMsg("/nameless/graphics/player", "i i i i i i");
+  id => graphicsXmit.addInt;
+  positions[id].x => graphicsXmit.addInt;
+  positions[id].y => graphicsXmit.addInt;
+  positions[id].color.h => graphicsXmit.addInt;
+  positions[id].color.s => graphicsXmit.addInt;
+  positions[id].color.v => graphicsXmit.addInt;
+}
+
+fun void g_cellFadeIn(int id, int x, int y) {
+  graphicsXmit.startMsg("/nameless/graphics/cell/fadeIn", "i i i i");
   id => graphicsXmit.addInt;
   x => graphicsXmit.addInt;
   y => graphicsXmit.addInt;
+  attackMs => graphicsXmit.addInt;
+}
+
+fun void g_cellFadeOut(int id, int x, int y) {
+  graphicsXmit.startMsg("/nameless/graphics/cell/fadeOut", "i i i i");
+  id => graphicsXmit.addInt;
+  x => graphicsXmit.addInt;
+  y => graphicsXmit.addInt;
+  releaseMs => graphicsXmit.addInt;
 }
 
 

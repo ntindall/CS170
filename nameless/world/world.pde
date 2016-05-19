@@ -25,6 +25,7 @@ void setup() {
   noStroke();
   noCursor();
   // fullScreen(2);
+  colorMode(HSB, 360, 100, 100, 100);
   frameRate(30);
 
   Ani.init(this);
@@ -42,20 +43,22 @@ void setup() {
    * the method test(int theA, int theB)
    */
   oscP5.plug(this, "setupWorld", "/nameless/graphics/init");
-  oscP5.plug(this, "updatePlayer", "/nameless/graphics/position");
+  oscP5.plug(this, "updatePlayer", "/nameless/graphics/player");
+  oscP5.plug(this, "cellFadeIn", "/nameless/graphics/cell/fadeIn");
+  oscP5.plug(this, "cellFadeOut", "/nameless/graphics/cell/fadeOut");
 }
 
 void draw() {
   background(0);
+
+  if (grid != null)
+    grid.draw();
 
   for (int i = 0; i < N_PLAYERS; i++) {
     Blob blob = blobs[i];
     if (blob != null)
       blob.draw();
   }
-
-  if (grid != null)
-    grid.draw();
 }
 
 void initWorld() {
@@ -67,7 +70,7 @@ void initWorld() {
     blobs[id].show();
   }
 
-  grid = new Grid(WIDTH, WORLD_SIZE, CELL_SIZE, _x, _y);
+  grid = new Grid(WIDTH, N_PLAYERS, WORLD_SIZE, CELL_SIZE, _x, _y);
 
   println("players: "+N_PLAYERS);
 }
@@ -85,11 +88,20 @@ void setupWorld(int n, int width, int height) {
     WIDTH = width;
 }
 
-void updatePlayer(int id, int x, int y) {
+void updatePlayer(int id, int x, int y, int h, int s, int b) {
   blobs[id].setX(x);
   blobs[id].setY(y);
+  blobs[id].setColor(h, s, b);
+  grid.updateCell(id, x, y, h, s, b);
 }
 
+void cellFadeIn(int id, int x, int y, int time) {
+  grid.cellFadeIn(id, x, y, time);
+}
+
+void cellFadeOut(int id, int x, int y, int time) {
+  grid.cellFadeOut(id, x, y, time);
+}
 
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage oscMsg) {

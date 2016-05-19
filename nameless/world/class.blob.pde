@@ -2,7 +2,8 @@ class Blob {
   float x, y, radius;
   float startX, startY, stepSize;
   int id;
-  Colors colors = new Colors();
+  // Colors colors = new Colors();
+  color col;
   float alpha = 0;
   float halo = 0;
 
@@ -11,7 +12,8 @@ class Blob {
     float offset = stepSize / 2;
     startX = _x + offset;
     startY = _y - offset;
-    radius = 10;
+    radius = 20;
+    halo = 0.5;
     x = startX;
     y = startY;
     id = _id;
@@ -19,12 +21,16 @@ class Blob {
 
   void setX(float x) {
     float _x = startX + (stepSize * x);
-    Ani.to(this, 5, "x", _x);
+    Ani.to(this, 1, "x", _x);
   }
 
   void setY(float y) {
     float _y = startY - (stepSize * y);
-    Ani.to(this, 5, "y", _y);
+    Ani.to(this, 1, "y", _y);
+  }
+
+  void setColor(int h, int s, int b) {
+    col = color(h, s, b);
   }
 
   void hide() {
@@ -36,9 +42,9 @@ class Blob {
   }
 
   void draw() {
-    fill(colors.getById(id), (halo * 255));
+    fill(color(0, 0, 100, 10));
     ellipse(x, y, radius * (1 + halo), radius * (1 + halo));
-    fill(colors.getById(id), alpha);
+    fill(col, alpha);
     ellipse(x, y, radius, radius);
   }
 }
