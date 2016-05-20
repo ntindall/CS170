@@ -20,14 +20,14 @@ public class HSV {
 
   fun static int getCool()
   { 
-    return 210;
+    // return 210;
 
     return Math.random2(180, 299);
   }
 
   fun static int getWarm()
   {
-    return 350;
+    // return 350;
 
     if (Math.random2(0,1) == 1)
     {
@@ -40,7 +40,7 @@ public class HSV {
 
   fun static int getGreen()
   {
-    return 90; 
+    // return 90; 
 
     return Math.random2(60,179);
   }

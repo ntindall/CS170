@@ -5,6 +5,8 @@ class Grid {
   float startX, startY;
   int players;
 
+  boolean alive = false;
+
   // cells
   ArrayList<GridCell> cells;
 
@@ -55,10 +57,14 @@ class Grid {
     cells.get(idx).fadeOut(time / 1000.0); // convert to seconds    
   }
 
+  void worldAlive(boolean b) {
+    alive = b;
+  }
+
   void draw() {
-    for (GridCell cell : cells) {
-      cell.draw();
-    }
+    if (alive)
+      for (GridCell cell : cells)
+        cell.draw();
 
     stroke(0, 0, 100, 10);
     strokeWeight(3);

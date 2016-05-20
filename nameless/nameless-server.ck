@@ -103,20 +103,20 @@ fun void netinit() {
   } else 
   {
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-    1 => targets;
-    xmit[0].setHost ( "localhost", port );
-   // xmit[1].setHost ( "Nathan.local", port );
+    11 => targets;
+    xmit[0].setHost ( "albacore.local", port );
+    xmit[1].setHost ( "kimchi.local", port );
+    xmit[2].setHost ( "jambalaya.local", port );
+    xmit[3].setHost ( "vindaloo.local", port );
+    xmit[4].setHost ( "spam.local", port );
+    xmit[5].setHost ( "hamburger.local", port );
+    xmit[6].setHost ( "pho.local", port );
+    xmit[7].setHost ( "foiegras.local", port );
+    xmit[8].setHost ( "nachos.local", port );
+    xmit[9].setHost ( "meatloaf.local", port );
+    xmit[10].setHost ( "chowder.local", port );
     /*
-    xmit[2].setHost ( "tikkamasala.local", port );
-    xmit[3].setHost ( "transfat.local", port );
-    xmit[4].setHost ( "peanutbutter.local", port );
-    xmit[5].setHost ( "tofurkey.local", port );
-    xmit[6].setHost ( "doubledouble.local", port );
-    xmit[7].setHost ( "seventeen.local", port );
-    xmit[8].setHost ( "aguachile.local", port );
-    xmit[9].setHost ( "snickers.local", port );
-    xmit[10].setHost ( "padthai.local", port );
-    xmit[11].setHost ( "flavorblasted.local", port );
+    xmit[11].setHost ( "albacore.local", port );
     xmit[12].setHost ( "dolsotbibimbop.local", port );
     xmit[13].setHost ( "poutine.local", port );
     xmit[14].setHost ( "shabushabu.local", port );
@@ -199,7 +199,7 @@ fun void targetinit()
 
     positions[i].color.getWarm() => positions[i].color.h;
     100 => positions[i].color.s;
-    50 => positions[i].color.v;
+    100 => positions[i].color.v;
   }
 }
 
@@ -355,12 +355,14 @@ fun void handleAction() {
       {
         //update graphics
         <<< "Jump received!!! from ", id >>>;
+        spork ~g_playerJump(id);
       }
 
       if (actionId == ActionEnum.tinkle())
       {
         //update graphics
         <<< "Tinkle received!!! from ", id >>>;
+        spork ~g_playerJump(id);
       }
 
       if (actionId == ActionEnum.enter())
@@ -487,6 +489,11 @@ fun void g_cellFadeOut(int id, int x, int y) {
   x => graphicsXmit.addInt;
   y => graphicsXmit.addInt;
   releaseMs => graphicsXmit.addInt;
+}
+
+fun void g_playerJump(int id) {
+  graphicsXmit.startMsg("/nameless/graphics/player/jump", "i");
+  id => graphicsXmit.addInt;
 }
 
 

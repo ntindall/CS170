@@ -1,6 +1,9 @@
 import oscP5.*;
 import de.looksgood.ani.*;
 
+// globals
+boolean serverReady = false;
+
 // osc
 OscP5 oscP5;
 
@@ -42,8 +45,9 @@ void setup() {
    * message with address pattern /test and typetag ii will be forwarded to
    * the method test(int theA, int theB)
    */
-  oscP5.plug(this, "setupWorld", "/nameless/graphics/init");
+  oscP5.plug(this, "resetWorld", "/nameless/graphics/init");
   oscP5.plug(this, "updatePlayer", "/nameless/graphics/player/move");
+  oscP5.plug(this, "jumpPlayer", "/nameless/graphics/player/jump");
   oscP5.plug(this, "showPlayer", "/nameless/graphics/player/enter");
   oscP5.plug(this, "cellFadeIn", "/nameless/graphics/cell/fadeIn");
   oscP5.plug(this, "cellFadeOut", "/nameless/graphics/cell/fadeOut");
@@ -55,42 +59,53 @@ void draw() {
   if (grid != null)
     grid.draw();
 
-  for (int i = 0; i < N_PLAYERS; i++) {
-    Blob blob = blobs[i];
-    if (blob != null)
-      blob.draw();
-  }
+  if (blobs != null)
+    for (int i = 0; i < N_PLAYERS; i++) {
+      Blob blob = blobs[i];
+      if (blob != null)
+        blob.draw();
+    }
 }
 
 void initWorld() {
   float _x = (width / 2) - (WORLD_SIZE / 2);
   float _y = (height / 2) + (WORLD_SIZE / 2);
 
+  blobs = new Blob[N_PLAYERS];
+
   for (int id = 0; id < N_PLAYERS; ++id) {
     blobs[id] = new Blob(id, _x, _y, CELL_SIZE);
-    // blobs[id].show();
+    blobs[id].hide();
+    blobs[id].worldAlive(true);
   }
 
   grid = new Grid(WIDTH, N_PLAYERS, WORLD_SIZE, CELL_SIZE, _x, _y);
+  grid.worldAlive(true);
 
   println("players: "+N_PLAYERS);
 }
 
-void setupWorld(int n, int width, int height) {
-  if (n != N_PLAYERS) {
+void resetWorld(int n, int width, int height) {
+  if (n != N_PLAYERS)
     N_PLAYERS = n;
-    blobs = new Blob[N_PLAYERS];
-  }
 
   if (height != HEIGHT)
     HEIGHT = height;
 
   if (width != WIDTH)
     WIDTH = width;
+
+  serverReady = true;
+
+  initWorld();
 }
 
 void showPlayer(int id) {
   blobs[id].show();
+}
+
+void jumpPlayer(int id) {
+  blobs[id].jump();
 }
 
 void updatePlayer(int id, int x, int y, int h, int s, int b) {

@@ -7,6 +7,8 @@ class Blob {
   float alpha = 0;
   float halo = 0;
 
+  boolean alive = false;
+
   Blob(int _id, float _x, float _y, float _size) {
     stepSize = _size;
     float offset = stepSize / 2;
@@ -38,11 +40,30 @@ class Blob {
   }
 
   void show() {
-    Ani.to(this, 2, "alpha", 100);
+    Ani.to(this, 2, "alpha", 40);
+  }
+
+  void jump() {
+    jumpUp();
+  }
+
+  void jumpUp() {
+    Ani.to(this, 0.1, "alpha", 100, Ani.SINE_IN, "onEnd:jumpDown");
+  }
+
+  void jumpDown() {
+    Ani.to(this, 1, "alpha", 40, Ani.SINE_OUT);
+  }
+
+  void worldAlive(boolean b) {
+    alive = b;
   }
 
   void draw() {
-    fill(color(0, 0, 100, 10 * (alpha / 100)));
+    if (!alive)
+      return;
+    
+    fill(color(0, 0, 100, 20 * (alpha / 100)));
     ellipse(x, y, radius * (1 + halo), radius * (1 + halo));
     fill(col, alpha);
     ellipse(x, y, radius, radius);

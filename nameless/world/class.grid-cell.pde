@@ -34,11 +34,11 @@ class GridCell {
 
     println("a: " + a + " " + aIn + " " + aOut);
 
-    float dur = t * ((100 - aIn) / 100);
+    float dur = t * ((33 - aIn) / 33);
     println("dur: "+dur);
 
     state = 1;
-    Ani.to(this, dur, "aIn", 100, Ani.QUART_OUT);
+    Ani.to(this, dur, "aIn", 33, Ani.QUART_OUT);
   }
 
   void fadeOut(float t) {

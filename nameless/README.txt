@@ -1,3 +1,18 @@
+NOTES:
+
+add score
+density
+absense and presense
+formations
+
+--------------------------------------------------------------------------------
+
+nameless Trijeet.local
+
+motu -25
+
+--------------------------------------------------------------------------------
+
 To run server:
 
 chuck run-nameless-server.ck:(local)
