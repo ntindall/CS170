@@ -65,8 +65,10 @@ int v;
 1     => float sustainGain;
 10000 => int releaseMs;
 
+/*
 0.1   => float coolGain;
 0     => float warmGain;
+*/
 
 Event playerMoved;
 Event stateChange;
@@ -99,8 +101,8 @@ xmit.setHost ( host, port );
 fun void network()
 {
   // create an address in the receiver, store in new variable
-  //id pitch r g b a d s r coolgain warmgain
-  recv.event( "/slork/synch/synth, i i i i i s i i f i f f" ) @=> OscEvent oe;
+  //id pitch r g b a d s r
+  recv.event( "/slork/synch/synth, i i i i i s i i f i" ) @=> OscEvent oe;
 
   // count
   0 => int count;
@@ -149,9 +151,6 @@ fun void network()
         oe.getInt()   => decayMs;
         oe.getFloat() => sustainGain;
         oe.getInt()   => releaseMs;
-
-        oe.getFloat() => coolGain;
-        oe.getFloat() => warmGain;
 
         //signal that global state change has occured
         stateChange.broadcast();
@@ -263,7 +262,8 @@ fun void stateMonitor()
   {
     //the global variables have shifted, update global warmness settings
     stateChange => now;
-    adjustLPF();
+    // adjustLPF();
+    adjustOsc();
   }
 }
 
@@ -288,6 +288,37 @@ fun void clockBroadcast()
 LPF globalLPF => Gain globalG => NRev r => dac;
 globalLPF.freq(1000);
 r.mix(0.05);
+
+Gain redGain, blueGain, greenGain;
+redGain => globalLPF;
+blueGain => globalLPF;
+greenGain => globalLPF;
+
+fun void adjustOsc() {
+  (h $ float ) / 120 => float oscBalance;
+
+  if (oscBalance <= 1) 
+  {
+    1 - oscBalance => redGain.gain;
+    oscBalance     => greenGain.gain;
+    0              => blueGain.gain;
+  } else if (oscBalance <= 2) 
+  {
+    oscBalance - 1 => oscBalance;
+
+    1 - oscBalance => greenGain.gain;
+    oscBalance     => blueGain.gain;
+    0              => redGain.gain;
+  } else 
+  {
+    //between 2 and 3
+    oscBalance - 2 => oscBalance;
+
+    1 - oscBalance => blueGain.gain;
+    oscBalance     => redGain.gain;
+    0              => greenGain.gain;
+  }
+}
 
 fun void adjustLPF()
 {
@@ -361,47 +392,60 @@ fun void tinkleSound(int amount)
 
 fun void drone()
 {
-  ADSR a => globalLPF;
+  ADSR redEnv;
+  ADSR blueEnv;
+  ADSR greenEnv;
+
+  redEnv => redGain;
+  blueEnv => blueGain;
+  greenEnv => greenGain;
   
   //* warm osc */
-  BeeThree warm => Gain warmG => a;
-  warm.lfoSpeed(1);
-  warm.lfoDepth(0.01);
-  warm.controlOne(0);
+  BeeThree redOsc;
+  redOsc.lfoSpeed(1);
+  redOsc.lfoDepth(0.01);
+  redOsc.controlOne(0);
 
-  Flute blue => Gain blueG => a;
+  redOsc => redEnv;
 
-  /* Gain adjust */
-  warmGain   => warmG.gain;
-  coolGain   => blueG.gain;
+  // blue osc
+  Flute blueOsc;
+
+  blueOsc => blueEnv;
 
   /* Pitch selection */
-  Std.mtof(pitch) => warm.freq;
-  Std.mtof(pitch) / 2=> blue.freq;
+  Std.mtof(pitch) => redOsc.freq;
+  Std.mtof(pitch) / 2=> blueOsc.freq;
 
   /* ADSR Tuning (controlled by server) */
 
   //ephemeral, have to cache
   releaseMs::ms => dur releaseTime;
 
-  a.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
+  redEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
+  blueEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
+  greenEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
 
-  /* Patch */
-  1 => warm.noteOn;
-  1 => blue.noteOn;
+    /* Patch */
+  1 => redOsc.noteOn;
+  1 => blueOsc.noteOn;
 
   //sync!
   clock => now;
 
-  a.keyOn();
+  redEnv.keyOn();
+  blueEnv.keyOn();
+  greenEnv.keyOn();
   playerMoved => now;
-  a.keyOff();
+  redEnv.keyOff();
+  greenEnv.keyOff();
+  blueEnv.keyOff();
 
   //release
   releaseTime => now;
 
-  1 => warm.noteOff;
-  1 => blue.noteOff;
+  1 => redOsc.noteOff;
+  1 => blueOsc.noteOff;
 }
 
 spork ~clockBroadcast();

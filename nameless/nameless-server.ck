@@ -11,8 +11,10 @@
 1  => float sustainGain;
 10000 => int releaseMs;
 
+/*
 0.1 => float warmGain;
 0   => float coolGain;
+*/
 
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
@@ -240,8 +242,8 @@ fun void updateClient(int z)
   printPlayerState(z, curPlayer);
 
   // start the message...
-  //id midi h s v grid a d s r coolGain warmGain
-  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i f f" );
+  //id midi h s v grid a d s r
+  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i" );
 
   // a message is kicked as soon as it is complete 
   // - type string is satisfied and bundles are closed
@@ -257,9 +259,7 @@ fun void updateClient(int z)
   decayMs        => xmit[z].addInt;
   sustainGain    => xmit[z].addFloat;
   releaseMs      => xmit[z].addInt; 
-     
-  coolGain       => xmit[z].addFloat;
-  warmGain       => xmit[z].addFloat;
+
 }
 
 fun void updateClients()
@@ -620,6 +620,7 @@ fun void keyboard()
           0.1  => sustainGain;
           1000 => releaseMs;
         }
+        /*
 
         //,
         if (msg.which == 54)
@@ -645,6 +646,7 @@ fun void keyboard()
           <<< "Cool gain: ", coolGain, "Warm gain:", warmGain >>>; 
 
         }
+        */
       }
     }
   }
