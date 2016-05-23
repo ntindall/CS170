@@ -331,34 +331,29 @@ fun void adjustLPF()
 
 fun void jumpSound()
 {
-  ModalBar m1 => Gain g;
-  ModalBar m2 => g;
+  Sample moan;
+  moan.getBuff() => KSChord ks => LPF lpf => ADSR env => globalG;
 
-  m1.controlChange(16,0);
-  m2.controlChange(16,0);
+  lpf.freq(1000);
 
-  0 => m1.stickHardness => m2.stickHardness;
+  moan.init("gasp.aif");
 
-  g => LPF l => globalG;
+  24 => int offset;
+  ks.tune(pitch - offset, pitch - offset - 12, pitch - offset - 24, pitch - offset - 36);
+  ks.feedback(Math.random2f(0.95, 0.999999999999));
 
-  l.freq(2000);
-
-  pitch => int realpitch;
-  if (pitch > 40) pitch - 12 => realpitch; 
-
-  m1.freq(Std.mtof(realpitch));
-  m2.freq(Std.mtof(realpitch + 7)); //fifth
+  env.set(0::ms, 0::ms, 1, 1::second);
 
   clock => now;
 
-  for (int i; i < 2; i++)
-  {
-    m1.strike(1);
-    m2.strike(1);
-    for (int i; i < 4; i++ ) clock => now;
-  }
+  env.keyOn();
 
-  1::second => now;
+  moan.playWithJitter(0.75, 1);
+  moan.getBuff().samples()::samp => now;
+
+  env.keyOff();
+
+  env.releaseTime() => now;
 }
 
 fun void tinkleSound(int amount)
@@ -383,9 +378,9 @@ fun void tinkleSound(int amount)
   for (int i; i <= amount * 2; i++)
   {
     clock => now; //sync
-    tinkler.strike(Math.random2f(0,1));
+    tinkler.strike(Math.random2f(0.6,1));
     clock => now; //triple
-    tinkler.damp(Math.random2f(0,1));
+    tinkler.damp(Math.random2f(0.7,1));
   }
   clock => now;
 }
