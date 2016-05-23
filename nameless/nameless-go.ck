@@ -285,14 +285,15 @@ fun void clockBroadcast()
 
 /*********************************************************** Sound Production */
 
-LPF globalLPF => Gain globalG => NRev r => dac;
-globalLPF.freq(1000);
+Gain globalG => NRev r => dac;
+//LPF globalLPF => Gain globalG => NRev r => dac;
+// globalLPF.freq(1000);
 r.mix(0.05);
 
 Gain redGain, blueGain, greenGain;
-redGain => globalLPF;
-blueGain => globalLPF;
-greenGain => globalLPF;
+redGain => globalG;
+blueGain => globalG;
+greenGain => globalG;
 
 fun void adjustOsc() {
   (h $ float ) / 120 => float oscBalance;
@@ -325,7 +326,7 @@ fun void adjustLPF()
   //wolfram alpha query
   //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
 
-  0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
+  // 0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
 }
 
 fun void jumpSound()
@@ -338,7 +339,7 @@ fun void jumpSound()
 
   0 => m1.stickHardness => m2.stickHardness;
 
-  g => LPF l => globalLPF;
+  g => LPF l => globalG;
 
   l.freq(2000);
 
@@ -362,8 +363,8 @@ fun void jumpSound()
 
 fun void tinkleSound(int amount)
 {
-  ModalBar tinkler => ResonZ z => globalLPF;
-  tinkler => globalLPF;
+  ModalBar tinkler => ResonZ z => globalG;
+  tinkler => globalG;
 
   pitch => int realpitch;
   while (realpitch < 60 || realpitch > 80)
@@ -405,17 +406,28 @@ fun void drone()
   redOsc.lfoSpeed(1);
   redOsc.lfoDepth(0.01);
   redOsc.controlOne(0);
-
-  redOsc => redEnv;
+  LPF redLPF;
+  12000 => redLPF.freq;
+  redOsc => redLPF => redEnv;
 
   // blue osc
-  Flute blueOsc;
+  Clarinet blueOsc;
+  Math.random2f(0.8, 0.9) => float p;
+  p => blueOsc.pressure;
+  spork ~modBlueOscVib(blueOsc);
+  LPF blueLPF;
+  1000 => blueLPF.freq;
+  blueOsc => blueLPF => blueEnv;
 
-  blueOsc => blueEnv;
+  // green osc
+  HevyMetl greenOsc;
+
+  greenOsc => greenEnv;
 
   /* Pitch selection */
   Std.mtof(pitch) => redOsc.freq;
-  Std.mtof(pitch) / 2=> blueOsc.freq;
+  Std.mtof(pitch) / 2 => blueOsc.freq;
+  Std.mtof(pitch) => greenOsc.freq;
 
   /* ADSR Tuning (controlled by server) */
 
@@ -429,6 +441,7 @@ fun void drone()
     /* Patch */
   1 => redOsc.noteOn;
   1 => blueOsc.noteOn;
+  1 => greenOsc.noteOn;
 
   //sync!
   clock => now;
@@ -446,6 +459,20 @@ fun void drone()
 
   1 => redOsc.noteOff;
   1 => blueOsc.noteOff;
+  1 => greenOsc.noteOff;
+}
+
+/* modulators */
+fun void modBlueOscVib(Clarinet @osc) {
+  SinOsc lfo => blackhole;
+  0.5 => lfo.freq;
+
+  // does child die when parent die?
+  // existentialism
+  while (true) {
+    (lfo.last() + 1) / 10.0 + 0.1 => osc.vibratoGain;
+    1::samp => now;
+  }
 }
 
 spork ~clockBroadcast();
