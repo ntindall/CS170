@@ -145,7 +145,6 @@ fun void printPlayerState(int id, PlayerState @ pos)
 
 fun void gridinit(int which)
 {
-
   int scale[];
 
   if (which == HIRAJOSHI) 
@@ -259,8 +258,16 @@ fun void updateClient(int z)
   decayMs        => xmit[z].addInt;
   sustainGain    => xmit[z].addFloat;
   releaseMs      => xmit[z].addInt; 
-
 }
+
+fun void sendBass()
+{
+  for (int z; z < targets; z++)
+  {
+    xmit[z].startMsg( "/slork/synch/bass");
+  }
+}
+
 
 fun void updateClients()
 {
@@ -579,47 +586,27 @@ fun void keyboard()
           spork ~gridinit(DMINOR);
         }
 
-        //ADSR control
-
-        //z
-        if (msg.which == 29)
-        {
-          <<< "A: 20000 D: 0     S: 1 R: 10000" >>>;
-          20000 => attackMs;
-          0     => decayMs;
-          1     => sustainGain;
-          10000 => releaseMs;
-        }
+        // bass sending
 
         //x
         if (msg.which == 27)
         {
-          <<< "A: 10000 D: 10000 S: 0.1 R: 10000" >>>;
-          10000 => attackMs;
-          10000 => decayMs;
-          0.1     => sustainGain;
-          5000 => releaseMs;
+          spork ~sendBass();
         }
 
-        //c
-        if (msg.which == 6)
-        {
-          <<< "A: 1000  D: 1000  S: 0.8 R: 1000" >>>;
-          1000  => attackMs;
-          1000  => decayMs;
-          0.8  => sustainGain;
-          1000 => releaseMs;
-        }
+        //ADSR control
 
-        //v
-        if (msg.which == 25)
-        {
-          <<< "A: 100   D: 100   S: 0.1 R: 1000" >>>;
-          100  => attackMs;
-          100  => decayMs;
-          0.1  => sustainGain;
-          1000 => releaseMs;
-        }
+        //1
+        if (msg.which == 30) spork ~changeSection(1);
+
+        //2
+        if (msg.which == 31) spork ~changeSection(2);
+
+        //3
+        if (msg.which == 32) spork ~changeSection(3);
+
+        //4
+        if (msg.which == 33) spork ~changeSection(4);
         /*
 
         //,
@@ -653,6 +640,46 @@ fun void keyboard()
 }
 
 /******************************************************************** Control */
+
+fun void changeSection(int WHICH)
+{
+  if (WHICH == 1)
+  {
+    <<< "A: 20000 D: 0     S: 1 R: 10000" >>>;
+    20000 => attackMs;
+    0     => decayMs;
+    1     => sustainGain;
+    10000 => releaseMs;
+  }
+
+  if (WHICH == 2)
+  {
+    <<< "A: 10000 D: 10000 S: 0.1 R: 10000" >>>;
+    10000 => attackMs;
+    10000 => decayMs;
+    0.1     => sustainGain;
+    5000 => releaseMs;
+  }
+
+  if (WHICH == 3)
+  {
+    <<< "A: 1000  D: 1000  S: 0.8 R: 1000" >>>;
+    1000  => attackMs;
+    1000  => decayMs;
+    0.8  => sustainGain;
+    1000 => releaseMs;
+  }
+
+  if (WHICH == 4)
+  {
+    <<< "A: 100   D: 100   S: 0.1 R: 1000" >>>;
+    100  => attackMs;
+    100  => decayMs;
+    0.1  => sustainGain;
+    1000 => releaseMs;
+  }
+}
+
 netinit();
 initscales();
 gridinit(HIRAJOSHI);

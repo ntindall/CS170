@@ -283,6 +283,24 @@ fun void clockBroadcast()
   }
 }
 
+fun void bassMonitor()
+{
+  recv.event( "/slork/synch/bass") @=> OscEvent be;
+
+  while (true)
+  {
+
+    be => now;
+
+    if (be.nextMsg() != 0)
+    {
+      spork ~bass();
+    }
+
+
+  }
+}
+
 /*********************************************************** Sound Production */
 
 Gain globalG => NRev r => dac;
@@ -470,7 +488,28 @@ fun void modBlueOscVib(Clarinet @osc) {
   }
 }
 
+fun void bass()
+{
+  <<< "hello" >>>;
+  SinOsc s => ADSR env => globalG;
+  s.freq(Std.mtof(pitch) / 2);
+  s.gain(0.4); //tone it down
+
+  env.set(10::second, 0::second, 0.5, 10::second);
+
+  env.keyOn();
+  10::second => now; 
+  env.keyOff();
+
+  env.releaseTime() => now;
+
+
+}
+
+/******************************************************************** CONTROL */
+
 spork ~clockBroadcast();
+spork ~bassMonitor();
 spork ~stateMonitor();
 spork ~network();
 client();
