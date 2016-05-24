@@ -49,13 +49,16 @@ SERVER KEYMAP
  - b                   to slew to random b
  - r                   to slew to random r
  - y                   <not implemented>
+
  - p                   to use pentatonic scale
  - h                   to use hirajoshi scale
  - a                   to use aminor
  - d                   to use dminor
- - zxcv                to set ADSR presets on all clients
- - ,                   increase gain balance to cool (client oscillators)
- - .                   increase gain balance to warm (client oscillators)
+
+ - x                   to fork bass on clients who have subs
+ 
+ - 1234                to set ADSR presets on all clients
+                       corresponds to sections of the piece 
 
  GESTURES
  - RAIN:     everyone drift downwards

@@ -1,20 +1,15 @@
 
 // value of clock
-4000::samp => dur T;
+8000::samp => dur T;
 
 // dimensions
 14 => int height;
 14 => int width;
 
-20000 => int attackMs;
-0  => int decayMs;
-1  => float sustainGain;
-10000 => int releaseMs;
-
-/*
-0.1 => float warmGain;
-0   => float coolGain;
-*/
+[20000, 10000, 1000, 50 ] @=> int attackMs[];
+[10000, 10000, 1000, 100 ] @=> int decayMs[];
+[0.8  , 0.1  , 0.5,  0.1 ] @=> float sustainGain[];
+[5000 , 5000 , 1000, 100 ] @=> int releaseMs[];
 
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
@@ -68,6 +63,8 @@ PlayerState positions[16];
 class PlayerState {
     int x;
     int y;
+    int whichEnv; //which index of the global envelope arrays to look in to
+                  //send envelopes to clients
 
     HSV color;
 }
@@ -96,6 +93,7 @@ OscRecv recv;
 recv.listen();
 
 
+
 // aim the transmitter at port
 fun void netinit() {
   if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
@@ -104,6 +102,10 @@ fun void netinit() {
     xmit[0].setHost ( "localhost", port );
   } else 
   {
+    //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
+    //subwoofers... then partitions into two ensembles used for setting 
+    //envelopes.
+    
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
     11 => targets;
     xmit[0].setHost ( "albacore.local", port );
@@ -246,18 +248,19 @@ fun void updateClient(int z)
 
   // a message is kicked as soon as it is complete 
   // - type string is satisfied and bundles are closed
-  z                                   => xmit[z].addInt;
-  grid[curPlayer.y*width+curPlayer.x].pitch => xmit[z].addInt;
+  z                                            => xmit[z].addInt;
+  grid[curPlayer.y*width+curPlayer.x].pitch    => xmit[z].addInt;
   curPlayer.color.h                            => xmit[z].addInt;
   curPlayer.color.s                            => xmit[z].addInt;
   curPlayer.color.v                            => xmit[z].addInt;
 
   printGrid(curPlayer.y*width+curPlayer.x) => xmit[z].addString;
 
-  attackMs       => xmit[z].addInt;
-  decayMs        => xmit[z].addInt;
-  sustainGain    => xmit[z].addFloat;
-  releaseMs      => xmit[z].addInt; 
+
+  attackMs[curPlayer.whichEnv]    => xmit[z].addInt;
+  decayMs[curPlayer.whichEnv]     => xmit[z].addInt;
+  sustainGain[curPlayer.whichEnv] => xmit[z].addFloat;
+  releaseMs[curPlayer.whichEnv]   => xmit[z].addInt; 
 }
 
 fun void sendBass()
@@ -313,7 +316,8 @@ fun void handleClient()
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
       // toggle old gridcell to fade out
-      spork ~g_cellFadeOut(id, positions[id].x, positions[id].y);
+      // do not fork, leads to race conditions
+      g_cellFadeOut(id, positions[id]);
 
       //get x
       positions[id].x + dX => positions[id].x;
@@ -335,7 +339,8 @@ fun void handleClient()
       spork ~g_updatePlayer(id);
 
       // toggle new gridcell to fade in
-      spork ~g_cellFadeIn(id, positions[id].x, positions[id].y);
+      // do not fork, leads to race conditions
+      g_cellFadeIn(id, positions[id]);
 
       // update clients
       spork ~updateClients();
@@ -482,20 +487,22 @@ fun void g_updatePlayer(int id) {
   positions[id].color.v => graphicsXmit.addInt;
 }
 
-fun void g_cellFadeIn(int id, int x, int y) {
+fun void g_cellFadeIn(int id, PlayerState @ curPlayer) {
   graphicsXmit.startMsg("/nameless/graphics/cell/fadeIn", "i i i i");
-  id => graphicsXmit.addInt;
-  x => graphicsXmit.addInt;
-  y => graphicsXmit.addInt;
-  attackMs => graphicsXmit.addInt;
+
+  id                           => graphicsXmit.addInt;
+  curPlayer.x                  => graphicsXmit.addInt;
+  curPlayer.y                  => graphicsXmit.addInt;
+  attackMs[curPlayer.whichEnv] => graphicsXmit.addInt;
 }
 
-fun void g_cellFadeOut(int id, int x, int y) {
+fun void g_cellFadeOut(int id, PlayerState @ curPlayer) {
   graphicsXmit.startMsg("/nameless/graphics/cell/fadeOut", "i i i i");
-  id => graphicsXmit.addInt;
-  x => graphicsXmit.addInt;
-  y => graphicsXmit.addInt;
-  releaseMs => graphicsXmit.addInt;
+
+  id                            => graphicsXmit.addInt;
+  curPlayer.x                   => graphicsXmit.addInt;
+  curPlayer.y                   => graphicsXmit.addInt;
+  releaseMs[curPlayer.whichEnv] => graphicsXmit.addInt;
 }
 
 fun void g_playerJump(int id) {
@@ -643,40 +650,39 @@ fun void keyboard()
 
 fun void changeSection(int WHICH)
 {
+
+  //todo, set the whichEnv values of each player to different values
+  //depending on which envelope you want them to play
   if (WHICH == 1)
   {
-    <<< "A: 20000 D: 0     S: 1 R: 10000" >>>;
-    20000 => attackMs;
-    0     => decayMs;
-    1     => sustainGain;
-    10000 => releaseMs;
+    for (int z; z < targets; z++)
+    {
+      0 => positions[z].whichEnv;
+    }
   }
 
   if (WHICH == 2)
   {
-    <<< "A: 10000 D: 10000 S: 0.1 R: 10000" >>>;
-    10000 => attackMs;
-    10000 => decayMs;
-    0.1     => sustainGain;
-    5000 => releaseMs;
+    for (int z; z < targets; z++)
+    {
+      1 => positions[z].whichEnv;
+    }
   }
 
   if (WHICH == 3)
   {
-    <<< "A: 1000  D: 1000  S: 0.8 R: 1000" >>>;
-    1000  => attackMs;
-    1000  => decayMs;
-    0.8  => sustainGain;
-    1000 => releaseMs;
+        for (int z; z < targets; z++)
+    {
+      2 => positions[z].whichEnv;
+    }
   }
 
   if (WHICH == 4)
   {
-    <<< "A: 100   D: 100   S: 0.1 R: 1000" >>>;
-    100  => attackMs;
-    100  => decayMs;
-    0.1  => sustainGain;
-    1000 => releaseMs;
+    for (int z; z < targets; z++)
+    {
+      3 => positions[z].whichEnv;
+    }
   }
 }
 

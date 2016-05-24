@@ -23,12 +23,12 @@ class Blob {
 
   void setX(float x) {
     float _x = startX + (stepSize * x);
-    Ani.to(this, 1.5, "x", _x);
+    Ani.to(this, 1, "x", _x);
   }
 
   void setY(float y) {
     float _y = startY - (stepSize * y);
-    Ani.to(this, 1.5, "y", _y);
+    Ani.to(this, 1, "y", _y);
   }
 
   void setColor(int h, int s, int b) {

@@ -376,8 +376,12 @@ fun void jumpSound()
 
 fun void tinkleSound(int amount)
 {
-  ModalBar tinkler => ResonZ z => globalG;
-  tinkler => globalG;
+  Rhodey tinkler => ResonZ z => HPF tinklerHPF;
+  tinkler => tinklerHPF;
+
+  tinklerHPF => Gain tinklerGain => globalG;
+
+  tinklerHPF.freq(8000);
 
   pitch => int realpitch;
   while (realpitch < 60 || realpitch > 80)
@@ -388,17 +392,20 @@ fun void tinkleSound(int amount)
 
   tinkler.freq(Std.mtof(realpitch));
   z.freq(Std.mtof(realpitch));
-
-  tinkler.controlChange(16, 6);
-  tinkler.stickHardness(0);
+  tinklerGain.gain(2);
+ // tinkler.stickHardness(0);
 
   //amount bounded between 0 and 9
+  SinOsc lfo => blackhole;
+  lfo.freq(0.1);
+
   for (int i; i <= amount * 2; i++)
   {
     clock => now; //sync
-    tinkler.strike(Math.random2f(0.6,1));
-    clock => now; //triple
-    tinkler.damp(Math.random2f(0.7,1));
+    tinkler.noteOn(lfo.last() + 1);
+    clock => now; 
+    tinkler.noteOff(1);
+
   }
   clock => now;
 }
