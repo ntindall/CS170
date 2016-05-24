@@ -20,29 +20,30 @@ public class HSV {
 
   fun static int getCool()
   { 
-    return 210;
-
-    return Math.random2(180, 299);
+    //return 210
+    //okay random... but focus on centre of 'blue'
+    return Math.random2(190, 230);
   }
 
   fun static int getWarm()
   {
-    return 350;
+    //return 0
 
+    //0 is center of warm
     if (Math.random2(0,1) == 1)
     {
-      return Math.random2(0,59);
+      return Math.random2(0,20);
     } else
     {
-      return Math.random2(300, 359);
+      return Math.random2(340, 359);
     }
   }
 
   fun static int getGreen()
   {
-    return 90; 
-
-    return Math.random2(60,179);
+    //return 120
+    //120 is center of green
+    return Math.random2(100,140);
   }
 
   fun string toString()

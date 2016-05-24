@@ -315,7 +315,6 @@ greenGain => globalG;
 
 fun void adjustOsc() {
   (h $ float ) / 120 => float oscBalance;
-
   if (oscBalance <= 1) 
   {
     1 - oscBalance => redGain.gain;
@@ -376,13 +375,29 @@ fun void jumpSound()
 
 fun void tinkleSound(int amount)
 {
-  Rhodey tinkler => ResonZ z => HPF tinklerHPF;
-  tinkler => tinklerHPF;
+  //global tinkler outgraph
+  ResonZ tinklerZ => globalG;
 
-  tinklerHPF => Gain tinklerGain => globalG;
+  //blue patch
+  Rhodey blueTinkler => HPF blueTinklerHPF;
+  blueTinklerHPF => Gain blueTinklerGain => blueGain => tinklerZ;
+  blueTinklerHPF.freq(8000);
 
-  tinklerHPF.freq(8000);
+  //red patch
+  ModalBar redTinkler => Gain redTinklerGain => redGain => tinklerZ;
+  redTinkler.stickHardness(0);
+  redTinkler.controlChange(16, 2);
 
+  //green patch
+  Wurley greenTinkler => HPF greenTinklerHPF;
+  greenTinklerHPF => Gain greenTinklerGain => greenGain => tinklerZ;
+  greenTinklerHPF.freq(4000);
+
+  //ramp gain
+  2 => blueTinklerGain.gain => redTinklerGain.gain;
+  0.5 => greenTinkler.gain;
+
+  //constrain pitch
   pitch => int realpitch;
   while (realpitch < 60 || realpitch > 80)
   {
@@ -390,23 +405,30 @@ fun void tinkleSound(int amount)
     if (realpitch > 80) realpitch - 36 => realpitch;
   }
 
-  tinkler.freq(Std.mtof(realpitch));
-  z.freq(Std.mtof(realpitch));
-  tinklerGain.gain(2);
- // tinkler.stickHardness(0);
+  //set pitch
+  Std.mtof(realpitch) => blueTinkler.freq => redTinkler.freq => greenTinkler.freq;
+  Std.mtof(realpitch) => tinklerZ.freq;
 
-  //amount bounded between 0 and 9
   SinOsc lfo => blackhole;
   lfo.freq(0.1);
 
+  //amount bounded between 0 and 9
   for (int i; i <= amount * 2; i++)
   {
     clock => now; //sync
-    tinkler.noteOn(lfo.last() + 1);
+    blueTinkler.noteOn(lfo.last() + 1);
+    greenTinkler.noteOn(lfo.last() + 1);
+    redTinkler.noteOn((lfo.last() + 1) / 2);
+
     clock => now; 
-    tinkler.noteOff(1);
+
+    redTinkler.noteOff(1);
+    greenTinkler.noteOff(1);
+    blueTinkler.noteOff(1);
 
   }
+
+  //let die
   clock => now;
 }
 
