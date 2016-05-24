@@ -24,6 +24,9 @@ int aminor[width];
 7 => int DMINOR;
 int dminor[width];
 
+28 => int YO;
+int yo[width];
+
 fun void initscales()
 {
   60 => int C;
@@ -50,6 +53,9 @@ fun void initscales()
 
   [D-36, A-36, C-24, D-24, F-24, A-12, D-12, A-12, F-12, 
          D-12, A-24, F-24, E-24, D-24] @=> dminor;
+
+  [D-24, E-24, G-24, A-24, C-12, D-12, E-12, G-12, E-12,
+         D-12, B-24, A-24, G-24 ,E-24] @=> yo;
 }
 
 /************************************************* Global Grid Initialization */
@@ -171,6 +177,12 @@ fun void gridinit(int which)
   {
     dminor @=> scale;
     <<< "Scale: DMINOR" >>>;
+  }
+
+  if (which == YO)
+  {
+    yo @=> scale;
+    <<< "Scale: YO" >>>;
   }
 
   for( 0 => int y; y < height; y++ ) 
@@ -591,6 +603,12 @@ fun void keyboard()
         {
           //shift to dminor scale
           spork ~gridinit(DMINOR);
+        }
+
+        //y
+        if (msg.which == YO)
+        {
+          spork ~gridinit(YO);
         }
 
         // bass sending
