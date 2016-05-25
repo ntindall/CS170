@@ -49,6 +49,7 @@ void setup() {
   oscP5.plug(this, "updatePlayer", "/nameless/graphics/player/move");
   oscP5.plug(this, "jumpPlayer", "/nameless/graphics/player/jump");
   oscP5.plug(this, "showPlayer", "/nameless/graphics/player/enter");
+  oscP5.plug(this, "hidePlayer", "/nameless/graphics/player/exit");
   oscP5.plug(this, "cellFadeIn", "/nameless/graphics/cell/fadeIn");
   oscP5.plug(this, "cellFadeOut", "/nameless/graphics/cell/fadeOut");
 }
@@ -102,6 +103,10 @@ void resetWorld(int n, int width, int height) {
 
 void showPlayer(int id) {
   blobs[id].show();
+}
+
+void hidePlayer(int id) {
+  blobs[id].hide();
 }
 
 void jumpPlayer(int id) {

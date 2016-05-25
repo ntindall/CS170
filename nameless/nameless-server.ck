@@ -329,7 +329,8 @@ fun void handleClient() {
       {
         //unset occupied for old position
         0 => grid[positions[id].y*width+positions[id].x].who[id];
-        //g_cellFadeOut(id, positions[id]);
+        spork ~g_hidePlayer(id);
+        spork ~g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
         continue;
       }
 
@@ -495,6 +496,11 @@ fun void g_init() {
 
 fun void g_showPlayer(int id) {
   graphicsXmit.startMsg("/nameless/graphics/player/enter", "i");
+  id => graphicsXmit.addInt;
+}
+
+fun void g_hidePlayer(int id) {
+  graphicsXmit.startMsg("/nameless/graphics/player/exit", "i");
   id => graphicsXmit.addInt;
 }
 
