@@ -1,6 +1,6 @@
 
 // value of clock
-8000::samp => dur T;
+200::ms => dur T;
 
 // dimensions
 14 => int height;
@@ -146,13 +146,11 @@ fun void printGridCell(GridCell @ var)
   <<< "p:", var.pitch, " o: ", var.isOccupied() >>>;
 }
 
-fun void printPlayerState(int id, PlayerState @ pos) 
-{
+fun void printPlayerState(int id, PlayerState @ pos) {
     <<< "ID: ", id, " at x: ", pos.x, " y: ", pos.y, pos.color.toString() >>>;
 }
 
-fun void gridinit(int which)
-{
+fun void gridinit(int which) {
   int scale[];
 
   if (which == HIRAJOSHI) 
@@ -203,8 +201,7 @@ fun void gridinit(int which)
   }
 }
 
-fun void targetinit()
-{
+fun void targetinit() {
   for (int i; i < targets; i++)
   {
     // Math.random2(0,width - 1) => positions[i].x;
@@ -249,8 +246,7 @@ fun string printGrid(int targetIdx) {
   return result;
 }
 
-fun void updateClient(int z)
-{
+fun void updateClient(int z) {
   positions[z] @=> PlayerState curPlayer; 
   printPlayerState(z, curPlayer);
 
@@ -275,8 +271,7 @@ fun void updateClient(int z)
   releaseMs[curPlayer.whichEnv]   => xmit[z].addInt; 
 }
 
-fun void sendBass()
-{
+fun void sendBass() {
   for (int z; z < targets; z++)
   {
     xmit[z].startMsg( "/slork/synch/bass");
@@ -284,8 +279,7 @@ fun void sendBass()
 }
 
 
-fun void updateClients()
-{
+fun void updateClients() {
   for( 0 => int z; z < targets; z++ ) 
   {
     updateClient(z); //no need to spork
@@ -293,7 +287,6 @@ fun void updateClients()
 }
 
 fun void sendClock() {
-
   while (true)
   {
     for (int z; z < targets; z++)
@@ -305,7 +298,6 @@ fun void sendClock() {
     //clock speed tunable by T
     T => now;
   }
-
 }
 
 fun void handleClient() {
@@ -373,7 +365,7 @@ fun void handleClient() {
 fun void handleAction() {
   //create an address to store action events
   //id actionID
-  recv.event( "/slork/synch/action, i i") @=> OscEvent acte;
+  recv.event( "/slork/synch/action, i i i") @=> OscEvent acte;
 
   while (true)
   {
@@ -383,6 +375,7 @@ fun void handleAction() {
     {
       acte.getInt() => int id;
       acte.getInt() => int actionId;
+      acte.getInt() => int actionParam;
 
       //if only there were enums
       if (actionId == ActionEnum.jump())
@@ -396,7 +389,7 @@ fun void handleAction() {
       {
         //update graphics
         <<< "Tinkle received!!! from ", id >>>;
-        spork ~g_playerJump(id);
+        spork ~g_playerTinkle(id, actionParam);
       }
 
       if (actionId == ActionEnum.enter())
@@ -530,6 +523,12 @@ fun void g_cellFadeOut(int id, int x, int y, int env) {
   x                   => graphicsXmit.addInt;
   y                   => graphicsXmit.addInt;
   releaseMs[env]      => graphicsXmit.addInt;
+}
+
+fun void g_playerTinkle(int id, int tinkles) {
+  graphicsXmit.startMsg("/nameless/graphics/player/tinkle", "i i");
+  id => graphicsXmit.addInt;
+  tinkles => graphicsXmit.addInt;
 }
 
 fun void g_playerJump(int id) {

@@ -1,11 +1,13 @@
 class Blob {
   float x, y, radius;
+  float xGoal, yGoal;
   float startX, startY, stepSize;
   int id;
   // Colors colors = new Colors();
   color col;
   float alpha = 0;
   float halo = 0;
+  int tinklesRemaining = 0;
 
   boolean alive = false;
 
@@ -18,16 +20,20 @@ class Blob {
     halo = 0.5;
     x = startX;
     y = startY;
+    xGoal = x;
+    yGoal = y;
     id = _id;
   }
 
   void setX(float x) {
     float _x = startX + (stepSize * x);
+    xGoal = _x;
     Ani.to(this, 1, "x", _x);
   }
 
   void setY(float y) {
     float _y = startY - (stepSize * y);
+    yGoal = _y;
     Ani.to(this, 1, "y", _y);
   }
 
@@ -43,16 +49,39 @@ class Blob {
     Ani.to(this, 2, "alpha", 40);
   }
 
+  void tinkle(int amount) {
+    tinklesRemaining = amount;
+
+    tinkleDown();
+    // Ani.to(this, 5, "x", xGoal + stepSize / 2, Ani.BOUNCE_IN_OUT);
+  }
+
+  void tinkleDown() {
+    if (tinklesRemaining > 0) {
+      Ani.to(this, 0.2, "alpha", 100, Ani.SINE_IN, "onEnd:tinkleUp");
+      Ani.to(this, 0.2, "radius", 15, Ani.SINE_IN);
+    }
+  }
+
+  void tinkleUp() {
+    Ani.to(this, 0.2, "alpha", 40, Ani.SINE_OUT, "onEnd:tinkleDown");
+    Ani.to(this, 0.2, "radius", 20, Ani.SINE_OUT);
+
+    tinklesRemaining--;
+  }
+
   void jump() {
     jumpUp();
   }
 
   void jumpUp() {
     Ani.to(this, 0.1, "alpha", 100, Ani.SINE_IN, "onEnd:jumpDown");
+    Ani.to(this, 0.1, "radius", 25, Ani.SINE_IN);
   }
 
   void jumpDown() {
     Ani.to(this, 1, "alpha", 40, Ani.SINE_OUT);
+    Ani.to(this, 1, "radius", 20, Ani.SINE_OUT);
   }
 
   void worldAlive(boolean b) {

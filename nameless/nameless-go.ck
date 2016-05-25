@@ -172,10 +172,19 @@ fun void xmitMove(int deltaX, int deltaY)
 
 fun void xmitAction(int actionId)
 {
-  xmit.startMsg( "/slork/synch/action", "i i");
+  xmit.startMsg( "/slork/synch/action", "i i i");
   id => xmit.addInt;
   actionId => xmit.addInt;
+  -1 => xmit.addInt;
+}
 
+// overloaded to accomodate actionParam
+fun void xmitAction(int actionId, int actionParam)
+{
+  xmit.startMsg( "/slork/synch/action", "i i i");
+  id => xmit.addInt;
+  actionId => xmit.addInt;
+  actionParam => xmit.addInt;
 }
 
 fun void client()
@@ -244,8 +253,8 @@ fun void client()
           //number pad, send tinkle 0 - 9
           if (msg.which >= 30 && msg.which <= 39)
           {
-            xmitAction(ActionEnum.tinkle());
-            spork ~tinkleSound(msg.which - 30);
+            xmitAction(ActionEnum.tinkle(), (msg.which - 29) * 2);
+            spork ~tinkleSound(msg.which - 29);
           }
 
           /************************************************ ARROW KEY CONTROL */
@@ -384,6 +393,7 @@ fun void jumpSound()
 
 fun void tinkleSound(int amount)
 {
+  <<< amount >>>;
   //global tinkler outgraph
   ResonZ tinklerZ => globalG;
 
@@ -422,12 +432,13 @@ fun void tinkleSound(int amount)
   lfo.freq(0.1);
 
   //amount bounded between 0 and 9
-  for (int i; i <= amount * 2; i++)
+  for (0 => int i; i < amount * 2; i++)
   {
     clock => now; //sync
     blueTinkler.noteOn(lfo.last() + 1);
     greenTinkler.noteOn(lfo.last() + 1);
     redTinkler.noteOn((lfo.last() + 1) / 2);
+    <<< "." >>>;
 
     clock => now; 
 
