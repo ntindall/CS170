@@ -1,9 +1,10 @@
 class GridCell {
   PShape cell;
   // colors
-  int h, s, b, a;
+  int h, s, b;
+  float a;
   int state = 0;
-  int aIn, aOut;
+  float aIn, aOut;
 
   GridCell(float _x, float _y, float size) {
     // h = 360;
@@ -44,8 +45,8 @@ class GridCell {
   void fadeOut(float t) {
     if (state == 1)
       aOut = aIn;
-    else
-      aOut = a;
+    // else
+    //   aOut = a;
 
     println("a: " + a + " " + aIn + " " + aOut);
 
@@ -58,7 +59,7 @@ class GridCell {
   }
 
   void draw() {
-    int _a;
+    float _a;
     if (state == 1)
       _a = aIn;
     else if (state == -1)
@@ -67,7 +68,7 @@ class GridCell {
       _a = 0;
 
     // if (_a != 0)
-    //   println("_a: "+_a);
+      // println("_a: "+_a);
 
     cell.setFill(color(h, s, b, _a));
     shape(cell);

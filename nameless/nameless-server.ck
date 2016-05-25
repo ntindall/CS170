@@ -308,8 +308,7 @@ fun void sendClock() {
 
 }
 
-fun void handleClient()
-{
+fun void handleClient() {
   // create an address in the receiver, store in new variable
   //id x y
   recv.event( "/slork/synch/move, i i i" ) @=> OscEvent oe;
@@ -330,7 +329,7 @@ fun void handleClient()
       {
         //unset occupied for old position
         0 => grid[positions[id].y*width+positions[id].x].who[id];
-        g_cellFadeOut(id, positions[id]);
+        //g_cellFadeOut(id, positions[id]);
         continue;
       }
 
@@ -340,8 +339,7 @@ fun void handleClient()
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
       // toggle old gridcell to fade out
-      // do not fork, leads to race conditions
-      g_cellFadeOut(id, positions[id]);
+      spork ~g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
 
       //get x
       positions[id].x + dX => positions[id].x;
@@ -363,8 +361,7 @@ fun void handleClient()
       spork ~g_updatePlayer(id);
 
       // toggle new gridcell to fade in
-      // do not fork, leads to race conditions
-      g_cellFadeIn(id, positions[id]);
+      spork ~g_cellFadeIn(id, positions[id].x, positions[id].y, positions[id].whichEnv);
 
       // update clients
       spork ~updateClients();
@@ -511,22 +508,22 @@ fun void g_updatePlayer(int id) {
   positions[id].color.v => graphicsXmit.addInt;
 }
 
-fun void g_cellFadeIn(int id, PlayerState @ curPlayer) {
+fun void g_cellFadeIn(int id, int x, int y, int env) {
   graphicsXmit.startMsg("/nameless/graphics/cell/fadeIn", "i i i i");
 
-  id                           => graphicsXmit.addInt;
-  curPlayer.x                  => graphicsXmit.addInt;
-  curPlayer.y                  => graphicsXmit.addInt;
-  attackMs[curPlayer.whichEnv] => graphicsXmit.addInt;
+  id                  => graphicsXmit.addInt;
+  x                   => graphicsXmit.addInt;
+  y                   => graphicsXmit.addInt;
+  attackMs[env]       => graphicsXmit.addInt;
 }
 
-fun void g_cellFadeOut(int id, PlayerState @ curPlayer) {
+fun void g_cellFadeOut(int id, int x, int y, int env) {
   graphicsXmit.startMsg("/nameless/graphics/cell/fadeOut", "i i i i");
 
-  id                            => graphicsXmit.addInt;
-  curPlayer.x                   => graphicsXmit.addInt;
-  curPlayer.y                   => graphicsXmit.addInt;
-  releaseMs[curPlayer.whichEnv] => graphicsXmit.addInt;
+  id                  => graphicsXmit.addInt;
+  x                   => graphicsXmit.addInt;
+  y                   => graphicsXmit.addInt;
+  releaseMs[env]      => graphicsXmit.addInt;
 }
 
 fun void g_playerJump(int id) {

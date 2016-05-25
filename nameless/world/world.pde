@@ -29,7 +29,7 @@ void setup() {
   noCursor();
   // fullScreen(2);
   colorMode(HSB, 360, 100, 100, 100);
-  frameRate(30);
+  frameRate(60);
 
   Ani.init(this);
   
