@@ -60,11 +60,15 @@ fun void initscales()
 
 /************************************************* Global Grid Initialization */
 
+16 => int MAX_PLAYERS;
+3 => int NUM_BASS;
+
 //zero initialized, heap memory
 new GridCell[height*width] @=> GridCell @ grid[];
 
 //The location of each target
-PlayerState positions[16];
+PlayerState positions[MAX_PLAYERS];
+int bassIndexes[NUM_BASS];
 
 class PlayerState {
     int x;
@@ -105,12 +109,16 @@ fun void netinit() {
   if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
   {
     1 => targets;
+
+    //write into the bassIndexes array negative numbers if you want less than
+    //NUM_BASS basses (handled as special case by the sendBass function)
+    [0, -1, -1] @=> bassIndexes;
     xmit[0].setHost ( "localhost", port );
   } else 
   {
     //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
-    //subwoofers... then partitions into two ensembles used for setting 
-    //envelopes.
+    //subwoofers... 
+    [0, 1, 2] @=> bassIndexes;
     
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
     11 => targets;
@@ -272,9 +280,14 @@ fun void updateClient(int z) {
 }
 
 fun void sendBass() {
-  for (int z; z < targets; z++)
+
+  //only send to whoever has a bass
+  for (int z; z < bassIndexes.cap(); z++)
   {
-    xmit[z].startMsg( "/slork/synch/bass");
+    bassIndexes[z] => int subwoofer_idx;
+
+    //hack to make local work
+    if (subwoofer_idx >= 0) xmit[subwoofer_idx].startMsg( "/slork/synch/bass" );
   }
 }
 

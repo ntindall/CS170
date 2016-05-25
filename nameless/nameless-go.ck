@@ -539,7 +539,7 @@ fun void modBlueOscVib(Clarinet @osc) {
 
 fun void bass()
 {
-  <<< "hello" >>>;
+  <<< "BASS SPORKED BY SERVER... DO NOT BE ALARMED" >>>;
   SinOsc s => ADSR env => globalG;
   s.freq(Std.mtof(pitch) / 2);
   s.gain(0.4); //tone it down
