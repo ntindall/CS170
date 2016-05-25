@@ -29,8 +29,8 @@ class Blob {
     float _x = startX + (stepSize * x);
     xGoal = _x;
     if (teleport == 1) {
-      Ani.to(this, 0, 0.5, "x", _x);
-      Ani.to(this, 0.5, "alpha", 0, Ani.SINE_IN, "onEnd:appear");
+      Ani.to(this, 0, 0.1, "x", _x);
+      Ani.to(this, 0.1, "alpha", 0, Ani.SINE_IN, "onEnd:appear");
     }
     else
       Ani.to(this, 1, "x", _x);
@@ -40,15 +40,15 @@ class Blob {
     float _y = startY - (stepSize * y);
     yGoal = _y;
     if (teleport == 2) {
-      Ani.to(this, 0, 0.5, "y", _y);
-      Ani.to(this, 0.5, "alpha", 0, Ani.SINE_IN, "onEnd:appear");
+      Ani.to(this, 0, 0.1, "y", _y);
+      Ani.to(this, 0.1, "alpha", 0, Ani.SINE_IN, "onEnd:appear");
     }
     else
       Ani.to(this, 1, "y", _y);
   }
 
   void appear() {
-    Ani.to(this, 0.5, "alpha", 40, Ani.SINE_OUT);
+    Ani.to(this, 0.1, "alpha", 40, Ani.SINE_OUT);
   }
 
   void setColor(int h, int s, int b) {
