@@ -334,24 +334,38 @@ fun void handleClient() {
       // toggle old gridcell to fade out
       spork ~g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
 
+      0 => int didTeleport;  // to track graphics teleport
+
       //get x
       positions[id].x + dX => positions[id].x;
 
       //x bounds
-      if (positions[id].x > width - 1) 0 => positions[id].x;
-      if (positions[id].x < 0) width - 1 => positions[id].x;
+      if (positions[id].x > width - 1) {
+        0 => positions[id].x;
+        1 => didTeleport;
+      } 
+      if (positions[id].x < 0) {
+        width - 1 => positions[id].x;
+        1 => didTeleport;
+      }
 
       //get y
       positions[id].y + dY => positions[id].y;
 
       //y bounds
-      if (positions[id].y > height - 1) 0 => positions[id].y;
-      if (positions[id].y < 0) height - 1 => positions[id].y;
+      if (positions[id].y > height - 1) {
+        0 => positions[id].y;
+        2 => didTeleport;
+      }
+      if (positions[id].y < 0) {
+        height - 1 => positions[id].y;
+        2 => didTeleport; 
+      }
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
 
       // update player graphics
-      spork ~g_updatePlayer(id);
+      spork ~g_updatePlayer(id, didTeleport);
 
       // toggle new gridcell to fade in
       spork ~g_cellFadeIn(id, positions[id].x, positions[id].y, positions[id].whichEnv);
@@ -498,13 +512,25 @@ fun void g_hidePlayer(int id) {
 }
 
 fun void g_updatePlayer(int id) {
-  graphicsXmit.startMsg("/nameless/graphics/player/move", "i i i i i i");
+  graphicsXmit.startMsg("/nameless/graphics/player/move", "i i i i i i i");
   id => graphicsXmit.addInt;
   positions[id].x => graphicsXmit.addInt;
   positions[id].y => graphicsXmit.addInt;
   positions[id].color.h => graphicsXmit.addInt;
   positions[id].color.s => graphicsXmit.addInt;
   positions[id].color.v => graphicsXmit.addInt;
+  0 => graphicsXmit.addInt;
+}
+
+fun void g_updatePlayer(int id, int didTeleport) {
+  graphicsXmit.startMsg("/nameless/graphics/player/move", "i i i i i i i");
+  id => graphicsXmit.addInt;
+  positions[id].x => graphicsXmit.addInt;
+  positions[id].y => graphicsXmit.addInt;
+  positions[id].color.h => graphicsXmit.addInt;
+  positions[id].color.s => graphicsXmit.addInt;
+  positions[id].color.v => graphicsXmit.addInt;
+  didTeleport => graphicsXmit.addInt;
 }
 
 fun void g_cellFadeIn(int id, int x, int y, int env) {
@@ -535,7 +561,6 @@ fun void g_playerJump(int id) {
   graphicsXmit.startMsg("/nameless/graphics/player/jump", "i");
   id => graphicsXmit.addInt;
 }
-
 
 /************************************************************************* IO */
 fun void keyboard()

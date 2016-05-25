@@ -118,9 +118,9 @@ void jumpPlayer(int id) {
   blobs[id].jump();
 }
 
-void updatePlayer(int id, int x, int y, int h, int s, int b) {
-  blobs[id].setX(x);
-  blobs[id].setY(y);
+void updatePlayer(int id, int x, int y, int h, int s, int b, int teleport) {
+  blobs[id].setX(x, teleport);
+  blobs[id].setY(y, teleport);
   blobs[id].setColor(h, s, b);
   grid.updateCell(id, x, y, h, s, b);
 }
