@@ -209,15 +209,24 @@ fun void client()
 
         if ((msg.which == 44) && (hasEntered == false))
         {
-          1 => hasEntered;
+          <<< "YOU HAVE ENTERED THE GRID" >>>;
+          true => hasEntered;
           xmitAction(ActionEnum.enter());
           xmitMove(0, 0);
           spork ~drone();
         }
 
-        if (hasEntered == 1)
+        if (hasEntered == true)
         {
           /********************************************* Player Sound Control */
+
+          //escape, allow nodes to leave
+          if (msg.which == 41)
+          {
+            <<< "YOU HAVE DEPARTED THE GRID. PRESS SPACE TO RE-ENTER" >>>;
+            false => hasEntered; //reset to allow spacebar for reentry
+            xmitMove(0,0);
+          }
 
           //d, rearticulate drone
           if (msg.which == 7) 

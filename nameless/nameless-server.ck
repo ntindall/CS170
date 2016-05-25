@@ -324,6 +324,18 @@ fun void handleClient()
       oe.getInt() => int dY;
       oe.getInt() => int dX;
 
+      //they are leaving the grid, send a fade out message
+      if (dY == 0 && dX == 0 
+                  && grid[positions[id].y*width+positions[id].x].who[id] == 1)
+      {
+        //unset occupied for old position
+        0 => grid[positions[id].y*width+positions[id].x].who[id];
+        g_cellFadeOut(id, positions[id]);
+        continue;
+      }
+
+
+
       //unset occupied for old position
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
