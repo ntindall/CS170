@@ -147,3 +147,9 @@ void oscEvent(OscMessage oscMsg) {
     println("### typetag\t"+ oscMsg.typetag());
   }
 }
+
+//trap escape key
+void keyPressed(){
+  if(key==27)
+    key=0;
+}

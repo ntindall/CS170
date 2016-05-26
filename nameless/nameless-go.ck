@@ -428,7 +428,7 @@ fun void tinkleSound(int amount)
     redTinkler.noteOn((lfo.last() + 1) / 2);
     <<< "." >>>;
 
-    clock => now; 
+    clock => now;
 
     redTinkler.noteOff(1);
     greenTinkler.noteOff(1);
