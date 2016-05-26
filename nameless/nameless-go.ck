@@ -364,31 +364,19 @@ fun void adjustLPF()
   // 0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
 }
 
-fun void jumpSound()
-{
-  Sample moan;
-  moan.getBuff() => KSChord ks => LPF lpf => ADSR env => globalG;
+fun void jumpSound() {
+  Rhodey inst => LPF lpf => NRev rev => globalG;
 
-  lpf.freq(1000);
-
-  moan.init("gasp.aif");
-
-  24 => int offset;
-  ks.tune(pitch - offset, pitch - offset - 12, pitch - offset - 24, pitch - offset - 36);
-  ks.feedback(Math.random2f(0.95, 0.999999999999));
-
-  env.set(0::ms, 0::ms, 1, 1::second);
+  lpf.freq(2000);
+  0.2 => rev.mix;
 
   clock => now;
 
-  env.keyOn();
+  12 => int offset;
+  Std.mtof(pitch - offset) => inst.freq;
+  inst.noteOn(1);
 
-  moan.playWithJitter(0.75, 1);
-  moan.getBuff().samples()::samp => now;
-
-  env.keyOff();
-
-  env.releaseTime() => now;
+  5::second => now;
 }
 
 fun void tinkleSound(int amount)
