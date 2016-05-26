@@ -6,6 +6,9 @@
 14 => int height;
 14 => int width;
 
+//if nonzero, server has indicated it is safe to begin.
+0 => int pieceIsActive;
+
 [20000, 10000, 1000, 50 ] @=> int attackMs[];
 [10000, 10000, 1000, 100 ] @=> int decayMs[];
 [0.8  , 0.1  , 0.5,  0.1 ] @=> float sustainGain[];
@@ -130,7 +133,7 @@ fun void netinit() {
     xmit[5].setHost ( "hamburger.local", port );
     xmit[6].setHost ( "pho.local", port );
     xmit[7].setHost ( "foiegras.local", port );
-    xmit[8].setHost ( "nachos.local", port );
+    xmit[8].setHost ( "lasagna.local", port );
     xmit[9].setHost ( "meatloaf.local", port );
     xmit[10].setHost ( "chowder.local", port );
     /*
@@ -145,6 +148,44 @@ fun void netinit() {
     //xmit[14].setHost ( "turkducken.local", port );
     //xmit[16].setHost ( "oatmealraisin.local", port );
   }
+}
+
+
+//wait for heartbeats from everyone before beginning anything else
+fun void waitForHeartbeats()
+{
+  recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
+
+  int isAlive[targets];
+
+  while ( true )
+  {
+    //alive check
+    true => int allAlive;
+
+    for (int i; i < isAlive.cap(); i++)
+    {
+      if (isAlive[i] < 5)
+      {
+        <<< "Client with id", i, "is not responding." >>>;
+        false => allAlive;
+      }
+    }
+
+    if (allAlive) break;
+
+    //read the next message
+    he => now;
+
+    while (he.nextMsg() != 0)
+    {
+      he.getInt() => int id;
+      isAlive[id]++;
+    }
+  }
+
+  <<< "All clients up..." >>>;
+  1 => pieceIsActive;
 }
 
 /*********************************************************** Driver Functions */
@@ -305,7 +346,11 @@ fun void sendClock() {
     for (int z; z < targets; z++)
     {
       // a message is kicked as soon as it is complete 
-      xmit[z].startMsg( "/slork/synch/clock");
+      xmit[z].startMsg( "/slork/synch/clock", "i i");
+      z => xmit[z].addInt;
+
+      //if non-zero, indicates to client that piece is active
+      pieceIsActive => xmit[z].addInt;
     }
 
     //clock speed tunable by T
@@ -327,6 +372,8 @@ fun void handleClient() {
       oe.getInt() => int id;
       oe.getInt() => int dY;
       oe.getInt() => int dX;
+
+      <<< id, dY, dX >>>;
 
       //they are leaving the grid, send a fade out message
       if (dY == 0 && dX == 0 
@@ -716,7 +763,7 @@ fun void keyboard()
   }
 }
 
-/******************************************************************** Control */
+/******************************************************************* Sections */
 
 fun void changeSection(int WHICH)
 {
@@ -756,16 +803,26 @@ fun void changeSection(int WHICH)
   }
 }
 
+/******************************************************************** Control */
+
+//initialize the xmit 
 netinit();
+
+//init other globals
 initscales();
 gridinit(HIRAJOSHI);
 targetinit();
 
+//graphics
 g_init();
 
-spork ~handleClient();
-spork ~handleAction();
+//begin sending the clock
 spork ~sendClock();
 
+//wait for heartbeats from everyone
+waitForHeartbeats();
 
+//run
+spork ~handleClient();
+spork ~handleAction();
 keyboard();

@@ -52,6 +52,9 @@ int id;
 //users should press spacebar to 'enter' the grid
 int hasEntered;
 
+//if nonzero, server has indicated it is safe to begin.
+int canStart;
+
 //r g b MIDI values
 int pitch;
 
@@ -97,6 +100,19 @@ xmit.setHost ( host, port );
 
 /******************************************************************** Network */
 
+fun void netinit()
+{
+  //wait for one valid clock to get identifier
+  recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
+  
+  if (ce.nextMsg() != 0)
+  {
+    ce.getInt() => id;
+    ce.getInt() => canStart;
+    <<< "Identifier is:", id >>>;
+  }
+}
+
 // receiver
 fun void network()
 {
@@ -106,13 +122,6 @@ fun void network()
 
   // count
   0 => int count;
-
-  /*
-  while (hasEntered == 0)
-  {
-    100::ms => now;
-  }
-  */
 
   // infinite event loop
   while ( true )
@@ -158,6 +167,20 @@ fun void network()
   }
 }
 
+/*************************************************************** TRANSMISSION */
+
+fun void xmitHeartbeat()
+{
+  while (true)
+  {
+    xmit.startMsg( "/slork/synch/heartbeat", "i");
+    id => xmit.addInt;
+
+    100::ms => now;
+  }
+}
+
+
 fun void xmitMove(int deltaX, int deltaY)
 {
   // a message is kicked as soon as it is complete 
@@ -202,6 +225,14 @@ fun void client()
   if( !hi.openKeyboard( deviceNum ) ) me.exit();
   // successful! print name of device
   <<< "keyboard '", hi.name(), "' ready" >>>;
+
+  //wait for server to activate
+  while (canStart == 0)
+  {
+    100::ms => now;
+  }
+
+  <<< "[!] SERVER HAS VERIFIED THAT ALL NODES ARE UP!" >>>;
 
   // infinite event loop
   while( true )
@@ -285,9 +316,10 @@ fun void stateMonitor()
   }
 }
 
-fun void clockBroadcast()
+fun void clockMonitor()
 {
-  recv.event( "/slork/synch/clock" ) @=> OscEvent ce;
+  //id, canstart
+  recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
 
   while (true)
   {  
@@ -296,7 +328,10 @@ fun void clockBroadcast()
 
       if (ce.nextMsg() != 0)
       {
+        ce.getInt() => id;
+        ce.getInt() => canStart;
         clock.broadcast();
+
       }
   }
 }
@@ -307,15 +342,12 @@ fun void bassMonitor()
 
   while (true)
   {
-
     be => now;
 
     if (be.nextMsg() != 0)
     {
       spork ~bass();
     }
-
-
   }
 }
 
@@ -545,7 +577,9 @@ fun void bass()
 
 /******************************************************************** CONTROL */
 
-spork ~clockBroadcast();
+netinit();
+spork ~xmitHeartbeat();
+spork ~clockMonitor();
 spork ~bassMonitor();
 spork ~stateMonitor();
 spork ~network();
