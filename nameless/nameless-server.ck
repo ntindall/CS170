@@ -79,9 +79,6 @@ class PlayerState {
     int whichEnv; //which index of the global envelope arrays to look in to
                   //send envelopes to clients
     HSV color;
-
-    int isActive;
-
     time lastMsg;
 }
 
@@ -211,8 +208,9 @@ fun void timeout()
   {
     for (int id; id < targets; id++)
     {
+      //no communication in past THRESHOLD and they are ACTIVE on the grid
       if (positions[id].lastMsg + TIMEOUT_THRESH < now 
-                         && positions[id].isActive != 0)
+                         && grid[idToIdx(id)].who[id] != 0)
       {
         spork ~timeoutHandler(id);
       }
@@ -225,10 +223,15 @@ fun void timeoutHandler(int id)
 {
   //do graphics update.
   <<< id, "has timed out" >>>;
-  0 => positions[id].isActive;
+  0 => grid[idToIdx(id)].who[id];
 }
 
 /*********************************************************** Driver Functions */
+
+fun int idToIdx(int id)
+{
+  return positions[id].y*width+positions[id].x;
+}
 
 fun void printGridCell(GridCell @ var) 
 {
@@ -419,17 +422,17 @@ fun void handleClient() {
 
       //they are leaving the grid, send a fade out message
       if (dY == 0 && dX == 0 
-                  && grid[positions[id].y*width+positions[id].x].who[id] == 1)
+                  && grid[idToIdx(id)].who[id] == 1)
       {
         //unset occupied for old position
-        0 => grid[positions[id].y*width+positions[id].x].who[id];
+        0 => grid[idToIdx(id)].who[id];
         spork ~g_hidePlayer(id);
         spork ~g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
         continue;
       }
 
       //unset occupied for old position
-      0 => grid[positions[id].y*width+positions[id].x].who[id];
+      0 => grid[idToIdx(id)].who[id];
 
       // toggle old gridcell to fade out
       spork ~g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
@@ -464,9 +467,8 @@ fun void handleClient() {
 
       //write last communiation time into positions array
       now => positions[id].lastMsg;
-      1   => positions[id].isActive;
 
-      1 => grid[positions[id].y*width+positions[id].x].who[id];
+      1 => grid[idToIdx(id)].who[id];
 
       // update player graphics
       spork ~g_updatePlayer(id, didTeleport);
