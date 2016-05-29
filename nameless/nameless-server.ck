@@ -78,8 +78,11 @@ class PlayerState {
     int y;
     int whichEnv; //which index of the global envelope arrays to look in to
                   //send envelopes to clients
-
     HSV color;
+
+    int isActive;
+
+    time lastMsg;
 }
 
 /***************************************************** Network Initialization */
@@ -106,7 +109,6 @@ OscRecv recv;
 recv.listen();
 
 
-
 // aim the transmitter at port
 fun void netinit() {
   if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
@@ -121,10 +123,14 @@ fun void netinit() {
   {
     //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
     //subwoofers... 
-    [0, 1, 2] @=> bassIndexes;
+    [0, 1, -1] @=> bassIndexes;
     
     //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-    11 => targets;
+    2 => targets;
+    xmit[0].setHost ( "localhost", port );
+    xmit[1].setHost ( "Rachel.local", port);
+    
+    /*
     xmit[0].setHost ( "albacore.local", port );
     xmit[1].setHost ( "kimchi.local", port );
     xmit[2].setHost ( "jambalaya.local", port );
@@ -136,17 +142,7 @@ fun void netinit() {
     xmit[8].setHost ( "lasagna.local", port );
     xmit[9].setHost ( "meatloaf.local", port );
     xmit[10].setHost ( "chowder.local", port );
-    /*
-    xmit[11].setHost ( "albacore.local", port );
-    xmit[12].setHost ( "dolsotbibimbop.local", port );
-    xmit[13].setHost ( "poutine.local", port );
-    xmit[14].setHost ( "shabushabu.local", port );
-    xmit[15].setHost ( "froyo.local", port );
     */
-    //xmit[11].setHost ( "pupuplatter.local", port );
-    //xmit[13].setHost ( "xiaolongbao.local", port );
-    //xmit[14].setHost ( "turkducken.local", port );
-    //xmit[16].setHost ( "oatmealraisin.local", port );
   }
 }
 
@@ -186,6 +182,50 @@ fun void waitForHeartbeats()
 
   <<< "All clients up..." >>>;
   1 => pieceIsActive;
+}
+
+
+fun void heartbeatMonitor()
+{
+  recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
+
+  while ( true )
+  {
+    //read the next message
+    he => now;
+
+    while (he.nextMsg() != 0)
+    {
+      he.getInt() => int id;
+      now => positions[id].lastMsg;
+    }
+  }
+
+}
+
+fun void timeout()
+{
+  500::ms => dur TIMEOUT_THRESH;
+
+  while (true)
+  {
+    for (int id; id < targets; id++)
+    {
+      if (positions[id].lastMsg + TIMEOUT_THRESH < now 
+                         && positions[id].isActive != 0)
+      {
+        spork ~timeoutHandler(id);
+      }
+    }
+    10::ms => now;
+  }
+}
+
+fun void timeoutHandler(int id)
+{
+  //do graphics update.
+  <<< id, "has timed out" >>>;
+  0 => positions[id].isActive;
 }
 
 /*********************************************************** Driver Functions */
@@ -261,6 +301,8 @@ fun void targetinit() {
     positions[i].color.getWarm() => positions[i].color.h;
     100 => positions[i].color.s;
     100 => positions[i].color.v;
+
+    //time automatically zero initialized
   }
 }
 
@@ -386,8 +428,6 @@ fun void handleClient() {
         continue;
       }
 
-
-
       //unset occupied for old position
       0 => grid[positions[id].y*width+positions[id].x].who[id];
 
@@ -421,6 +461,10 @@ fun void handleClient() {
         height - 1 => positions[id].y;
         2 => didTeleport; 
       }
+
+      //write last communiation time into positions array
+      now => positions[id].lastMsg;
+      1   => positions[id].isActive;
 
       1 => grid[positions[id].y*width+positions[id].x].who[id];
 
@@ -821,6 +865,10 @@ spork ~sendClock();
 
 //wait for heartbeats from everyone
 waitForHeartbeats();
+
+//aliveness handlers (for real time failsafe)
+spork ~heartbeatMonitor();
+spork ~timeout();
 
 //run
 spork ~handleClient();
