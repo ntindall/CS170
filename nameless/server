@@ -1,1 +1,11 @@
+# trap ctrl-c and call ctrl_c()
+trap ctrl_c INT
+
+function ctrl_c() {
+        echo "** Trapped CTRL-C"
+        echo "Killing all clients"
+        chuck killall-clients.ck:$1
+}
+
+
 chuck run-nameless-server.ck:$1
