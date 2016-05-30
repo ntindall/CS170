@@ -100,11 +100,13 @@ xmit.setHost ( host, port );
 
 /******************************************************************** Network */
 
+recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
+
 fun void netinit()
 {
   //wait for one valid clock to get identifier
-  recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
-  
+  ce => now;
+
   if (ce.nextMsg() != 0)
   {
     ce.getInt() => id;
@@ -319,7 +321,6 @@ fun void stateMonitor()
 fun void clockMonitor()
 {
   //id, canstart
-  recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
 
   while (true)
   {  
