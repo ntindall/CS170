@@ -140,11 +140,13 @@ fun void netinit() {
   }
 }
 
+/***************************************************************** HEARTBEATS */
+
+recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
 
 //wait for heartbeats from everyone before beginning anything else
 fun void waitForHeartbeats()
 {
-  recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
 
   int isAlive[targets];
 
@@ -181,14 +183,12 @@ fun void waitForHeartbeats()
 
 fun void heartbeatMonitor()
 {
-  recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
-
   while ( true )
   {
     //read the next message
     he => now;
 
-    while (he.nextMsg() != 0)
+    if (he.nextMsg() != 0)
     {
       he.getInt() => int id;
       now => positions[id].lastMsg;
@@ -865,6 +865,8 @@ recv.listen();
 //begin sending the clock
 spork ~sendClock();
 
+spork ~keyboard();
+
 //wait for heartbeats from everyone
 waitForHeartbeats();
 //after all heartbeats are received... the piece is considered active
@@ -875,5 +877,6 @@ spork ~timeout();
 
 //run
 spork ~handleClient();
-spork ~handleAction();
-keyboard();
+
+//listen
+handleAction();
