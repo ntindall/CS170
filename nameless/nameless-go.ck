@@ -578,9 +578,9 @@ fun void bass()
 /******************************************************************** CONTROL */
 
 netinit();
-spork ~xmitHeartbeat();
 spork ~clockMonitor();
 spork ~bassMonitor();
 spork ~stateMonitor();
 spork ~network();
+spork ~xmitHeartbeat();
 client();

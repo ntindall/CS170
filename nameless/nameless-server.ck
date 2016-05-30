@@ -102,9 +102,6 @@ int targets;
 OscRecv recv;
 // use port 6449
 6451 => recv.port;
-// start listening (launch thread)
-recv.listen();
-
 
 // aim the transmitter at port
 fun void netinit() {
@@ -114,7 +111,7 @@ fun void netinit() {
 
     //write into the bassIndexes array negative numbers if you want less than
     //NUM_BASS basses (handled as special case by the sendBass function)
-    [0, -1, -1] @=> bassIndexes;
+    [0, 0, 0] @=> bassIndexes;
     xmit[0].setHost ( "localhost", port );
   } else 
   {
@@ -862,11 +859,15 @@ targetinit();
 //graphics
 g_init();
 
+// start listening (launch thread)
+recv.listen();
+
 //begin sending the clock
 spork ~sendClock();
 
 //wait for heartbeats from everyone
 waitForHeartbeats();
+//after all heartbeats are received... the piece is considered active
 
 //aliveness handlers (for real time failsafe)
 spork ~heartbeatMonitor();
