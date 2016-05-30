@@ -472,6 +472,8 @@ fun void handleClient() {
       1 => grid[idToIdx(id)].who[id];
 
       // update player graphics
+      if (didTeleport == 0) 
+        spork ~g_showPlayer(id);
       spork ~g_updatePlayer(id, didTeleport);
 
       // toggle new gridcell to fade in
