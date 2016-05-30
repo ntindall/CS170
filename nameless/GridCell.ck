@@ -14,5 +14,3 @@ public class GridCell {
     return false;
   }
 }
-
-while (true) 1::day => now;

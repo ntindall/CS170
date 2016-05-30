@@ -247,7 +247,7 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
-        <<< msg.which >>>;
+        //<<< msg.which >>>;
 
         if ((msg.which == 44) && (hasEntered == false))
         {
@@ -570,10 +570,8 @@ fun void bass()
   env.keyOn();
   10::second => now; 
   env.keyOff();
-
+å
   env.releaseTime() => now;
-
-
 }
 
 /******************************************************************** CONTROL */
@@ -584,4 +582,9 @@ spork ~bassMonitor();
 spork ~stateMonitor();
 spork ~network();
 spork ~xmitHeartbeat();
-client();
+spork ~client();
+
+recv.event( "/slork/kill") @=> OscEvent killWaiter;
+killWaiter => now;
+<<< "You have been killed by the server." >>>;
+me.exit();

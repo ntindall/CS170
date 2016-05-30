@@ -64,14 +64,12 @@ fun void initscales()
 /************************************************* Global Grid Initialization */
 
 16 => int MAX_PLAYERS;
-3 => int NUM_BASS;
 
 //zero initialized, heap memory
 new GridCell[height*width] @=> GridCell @ grid[];
 
 //The location of each target
 PlayerState positions[MAX_PLAYERS];
-int bassIndexes[NUM_BASS];
 
 class PlayerState {
     int x;
@@ -91,54 +89,13 @@ OscSend graphicsXmit;
 // aim the transmitter at port
 graphicsXmit.setHost("localhost", graphicsPort); 
 
-// send objects
-OscSend xmit[16];
-// number of targets (initialized by netinit)
-int targets;
-// port
-6449 => int port;
+//create Xmitter
+Xmitter xmit;
 
 // create our OSC receiver
 OscRecv recv;
 // use port 6449
 6451 => recv.port;
-
-// aim the transmitter at port
-fun void netinit() {
-  if (me.arg(0) == "local" || me.arg(0) == "l" || me.arg(0) == "localhost")
-  {
-    1 => targets;
-
-    //write into the bassIndexes array negative numbers if you want less than
-    //NUM_BASS basses (handled as special case by the sendBass function)
-    [0, 0, 0] @=> bassIndexes;
-    xmit[0].setHost ( "localhost", port );
-  } else 
-  {
-    //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
-    //subwoofers... 
-    [0, 1, -1] @=> bassIndexes;
-    
-    //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-    2 => targets;
-    xmit[0].setHost ( "localhost", port );
-    xmit[1].setHost ( "Rachel.local", port);
-    
-    /*
-    xmit[0].setHost ( "albacore.local", port );
-    xmit[1].setHost ( "kimchi.local", port );
-    xmit[2].setHost ( "jambalaya.local", port );
-    xmit[3].setHost ( "vindaloo.local", port );
-    xmit[4].setHost ( "spam.local", port );
-    xmit[5].setHost ( "hamburger.local", port );
-    xmit[6].setHost ( "pho.local", port );
-    xmit[7].setHost ( "foiegras.local", port );
-    xmit[8].setHost ( "lasagna.local", port );
-    xmit[9].setHost ( "meatloaf.local", port );
-    xmit[10].setHost ( "chowder.local", port );
-    */
-  }
-}
 
 /***************************************************************** HEARTBEATS */
 
@@ -148,7 +105,7 @@ recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
 fun void waitForHeartbeats()
 {
 
-  int isAlive[targets];
+  int isAlive[xmit.targets()];
 
   while ( true )
   {
@@ -203,7 +160,7 @@ fun void timeout()
 
   while (true)
   {
-    for (int id; id < targets; id++)
+    for (int id; id < xmit.targets(); id++)
     {
       //no communication in past THRESHOLD and they are ACTIVE on the grid
       if (positions[id].lastMsg + TIMEOUT_THRESH < now 
@@ -295,7 +252,7 @@ fun void gridinit(int which) {
 }
 
 fun void targetinit() {
-  for (int i; i < targets; i++)
+  for (int i; i < xmit.targets(); i++)
   {
     // Math.random2(0,width - 1) => positions[i].x;
     // Math.random2(0,height - 1) => positions[i].y;
@@ -347,40 +304,40 @@ fun void updateClient(int z) {
 
   // start the message...
   //id midi h s v grid a d s r
-  xmit[z].startMsg( "/slork/synch/synth", "i i i i i s i i f i" );
+  xmit.at(z).startMsg( "/slork/synch/synth", "i i i i i s i i f i" );
 
   // a message is kicked as soon as it is complete 
   // - type string is satisfied and bundles are closed
-  z                                            => xmit[z].addInt;
-  grid[curPlayer.y*width+curPlayer.x].pitch    => xmit[z].addInt;
-  curPlayer.color.h                            => xmit[z].addInt;
-  curPlayer.color.s                            => xmit[z].addInt;
-  curPlayer.color.v                            => xmit[z].addInt;
+  z                                            => xmit.at(z).addInt;
+  grid[curPlayer.y*width+curPlayer.x].pitch    => xmit.at(z).addInt;
+  curPlayer.color.h                            => xmit.at(z).addInt;
+  curPlayer.color.s                            => xmit.at(z).addInt;
+  curPlayer.color.v                            => xmit.at(z).addInt;
 
-  printGrid(z, curPlayer.y*width+curPlayer.x) => xmit[z].addString;
+  printGrid(z, curPlayer.y*width+curPlayer.x) => xmit.at(z).addString;
 
 
-  attackMs[curPlayer.whichEnv]    => xmit[z].addInt;
-  decayMs[curPlayer.whichEnv]     => xmit[z].addInt;
-  sustainGain[curPlayer.whichEnv] => xmit[z].addFloat;
-  releaseMs[curPlayer.whichEnv]   => xmit[z].addInt; 
+  attackMs[curPlayer.whichEnv]    => xmit.at(z).addInt;
+  decayMs[curPlayer.whichEnv]     => xmit.at(z).addInt;
+  sustainGain[curPlayer.whichEnv] => xmit.at(z).addFloat;
+  releaseMs[curPlayer.whichEnv]   => xmit.at(z).addInt; 
 }
 
 fun void sendBass() {
 
   //only send to whoever has a bass
-  for (int z; z < bassIndexes.cap(); z++)
+  for (int z; z < xmit.basses().cap(); z++)
   {
-    bassIndexes[z] => int subwoofer_idx;
+    xmit.basses()[z] => int subwoofer_idx;
 
     //hack to make local work
-    if (subwoofer_idx >= 0) xmit[subwoofer_idx].startMsg( "/slork/synch/bass" );
+    if (subwoofer_idx >= 0) xmit.at(subwoofer_idx).startMsg( "/slork/synch/bass" );
   }
 }
 
 
 fun void updateClients() {
-  for( 0 => int z; z < targets; z++ ) 
+  for( 0 => int z; z < xmit.targets(); z++ ) 
   {
     updateClient(z); //no need to spork
   }
@@ -389,14 +346,14 @@ fun void updateClients() {
 fun void sendClock() {
   while (true)
   {
-    for (int z; z < targets; z++)
+    for (int z; z < xmit.targets(); z++)
     {
       // a message is kicked as soon as it is complete 
-      xmit[z].startMsg( "/slork/synch/clock", "i i");
-      z => xmit[z].addInt;
+      xmit.at(z).startMsg( "/slork/synch/clock", "i i");
+      z => xmit.at(z).addInt;
 
       //if non-zero, indicates to client that piece is active
-      pieceIsActive => xmit[z].addInt;
+      pieceIsActive => xmit.at(z).addInt;
     }
 
     //clock speed tunable by T
@@ -580,7 +537,7 @@ fun void slewIdxColor(int z, int hue)
 
 fun void slewColors(int hue) {
   <<< "slewing" >>>;
-  for( 0 => int z; z < targets; z++ ) 
+  for( 0 => int z; z < xmit.targets(); z++ ) 
   {  
     //calculate index
     if (HSV.isWarm(hue))
@@ -605,7 +562,7 @@ fun void slewColors(int hue) {
 
 fun void g_init() {
   graphicsXmit.startMsg("/nameless/graphics/init", "i i i");
-  targets => graphicsXmit.addInt;
+  xmit.targets() => graphicsXmit.addInt;
   width => graphicsXmit.addInt;
   height => graphicsXmit.addInt;
 }
@@ -698,7 +655,7 @@ fun void keyboard()
     {
       if (msg.isButtonDown())
       {
-        <<< msg.which >>>;
+        //<<< msg.which >>>;
 
         //r
         if (msg.which == 21)
@@ -821,7 +778,7 @@ fun void changeSection(int WHICH)
   //depending on which envelope you want them to play
   if (WHICH == 1)
   {
-    for (int z; z < targets; z++)
+    for (int z; z < xmit.targets(); z++)
     {
       0 => positions[z].whichEnv;
     }
@@ -829,7 +786,7 @@ fun void changeSection(int WHICH)
 
   if (WHICH == 2)
   {
-    for (int z; z < targets; z++)
+    for (int z; z < xmit.targets(); z++)
     {
       1 => positions[z].whichEnv;
     }
@@ -837,7 +794,7 @@ fun void changeSection(int WHICH)
 
   if (WHICH == 3)
   {
-        for (int z; z < targets; z++)
+        for (int z; z < xmit.targets(); z++)
     {
       2 => positions[z].whichEnv;
     }
@@ -845,7 +802,7 @@ fun void changeSection(int WHICH)
 
   if (WHICH == 4)
   {
-    for (int z; z < targets; z++)
+    for (int z; z < xmit.targets(); z++)
     {
       3 => positions[z].whichEnv;
     }
@@ -855,7 +812,7 @@ fun void changeSection(int WHICH)
 /******************************************************************** Control */
 
 //initialize the xmit 
-netinit();
+xmit.init(me.arg(0));
 
 //init other globals
 initscales();
@@ -871,6 +828,7 @@ recv.listen();
 //begin sending the clock
 spork ~sendClock();
 
+//init keyboard
 spork ~keyboard();
 
 //wait for heartbeats from everyone
