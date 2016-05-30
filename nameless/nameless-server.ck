@@ -9,9 +9,9 @@
 //if nonzero, server has indicated it is safe to begin.
 0 => int pieceIsActive;
 
-[20000, 10000, 1000, 50 ] @=> int attackMs[];
+[10000, 20000, 1000, 50 ] @=> int attackMs[];
 [10000, 10000, 1000, 100 ] @=> int decayMs[];
-[0.8  , 0.1  , 0.5,  0.1 ] @=> float sustainGain[];
+[0.1  , 0.8  , 0.5,  0.1 ] @=> float sustainGain[];
 [5000 , 5000 , 1000, 100 ] @=> int releaseMs[];
 
 /********************************************************************* Scales */
@@ -614,7 +614,7 @@ fun void g_cellFadeOut(int id, int x, int y, int env) {
   id                  => graphicsXmit.addInt;
   x                   => graphicsXmit.addInt;
   y                   => graphicsXmit.addInt;
-  releaseMs[env]      => graphicsXmit.addInt;
+  releaseMs[env] * 2  => graphicsXmit.addInt;
 }
 
 fun void g_playerTinkle(int id, int tinkles) {

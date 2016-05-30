@@ -271,10 +271,12 @@ fun void client()
           }
 
           //d, rearticulate drone
+          /*
           if (msg.which == 7) 
           {
             spork ~drone();
           }
+          */
 
           //j, send jump
           if (msg.which == 13)
@@ -286,7 +288,7 @@ fun void client()
           //number pad, send tinkle 0 - 9
           if (msg.which >= 30 && msg.which <= 39)
           {
-            xmitAction(ActionEnum.tinkle(), (msg.which - 29) * 2);
+            xmitAction(ActionEnum.tinkle(), (msg.which - 29));
             spork ~tinkleSound(msg.which - 29);
           }
 
@@ -359,7 +361,11 @@ Gain globalG => NRev r => dac;
 // globalLPF.freq(1000);
 r.mix(0.05);
 
+//global tinkler outgraph
+ResonZ tinklerZ => globalG;
+
 Gain redGain, blueGain, greenGain;
+0.8 => redGain.gain => blueGain.gain => greenGain.gain;
 redGain => globalG;
 blueGain => globalG;
 greenGain => globalG;
@@ -414,10 +420,6 @@ fun void jumpSound() {
 
 fun void tinkleSound(int amount)
 {
-  <<< amount >>>;
-  //global tinkler outgraph
-  ResonZ tinklerZ => globalG;
-
   //blue patch
   Rhodey blueTinkler => HPF blueTinklerHPF;
   blueTinklerHPF => Gain blueTinklerGain => blueGain => tinklerZ;
@@ -434,8 +436,8 @@ fun void tinkleSound(int amount)
   greenTinklerHPF.freq(4000);
 
   //ramp gain
-  2 => blueTinklerGain.gain => redTinklerGain.gain;
-  0.5 => greenTinkler.gain;
+  1 => blueTinklerGain.gain => redTinklerGain.gain;
+  0.25 => greenTinkler.gain;
 
   //constrain pitch
   pitch => int realpitch;
@@ -453,13 +455,12 @@ fun void tinkleSound(int amount)
   lfo.freq(0.1);
 
   //amount bounded between 0 and 9
-  for (0 => int i; i < amount * 2; i++)
+  for (0 => int i; i < amount; i++)
   {
     clock => now; //sync
     blueTinkler.noteOn(lfo.last() + 1);
     greenTinkler.noteOn(lfo.last() + 1);
     redTinkler.noteOn((lfo.last() + 1) / 2);
-    <<< "." >>>;
 
     clock => now;
 
