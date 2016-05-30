@@ -218,9 +218,13 @@ fun void timeout()
 
 fun void timeoutHandler(int id)
 {
-  //do graphics update.
   <<< id, "has timed out" >>>;
+
   0 => grid[idToIdx(id)].who[id];
+  
+  //do graphics update.
+  g_hidePlayer(id);
+  g_cellFadeOut(id, positions[id].x, positions[id].y, positions[id].whichEnv);
 }
 
 /*********************************************************** Driver Functions */
