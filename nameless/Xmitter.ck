@@ -25,7 +25,13 @@ public class Xmitter
       //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
       //subwoofers... 
       [0, 1, 2] @=> bassIndexes;
+
+      2 => num_targets;
+
+      backing[0].setHost ( "localhost", port);
+      backing[1].setHost ( "Rachel.local", port);
       
+      /*
       //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
       11 => num_targets;
       backing[0].setHost ( "albacore.local", port );
@@ -39,6 +45,7 @@ public class Xmitter
       backing[8].setHost ( "lasagna.local", port );
       backing[9].setHost ( "meatloaf.local", port );
       backing[10].setHost ( "chowder.local", port );
+      */
     }
   }
 
@@ -57,6 +64,3 @@ public class Xmitter
     return bassIndexes;
   }
 }
-
-
-while (true) 1::day => now;

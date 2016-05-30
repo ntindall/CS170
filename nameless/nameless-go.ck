@@ -247,7 +247,7 @@ fun void client()
     {
       if (msg.isButtonDown())
       {
-        <<< msg.which >>>;
+        //<<< msg.which >>>;
 
         if ((msg.which == 44) && (hasEntered == false))
         {
@@ -584,8 +584,7 @@ spork ~network();
 spork ~xmitHeartbeat();
 spork ~client();
 
-<<< "test" >>>;
 recv.event( "/slork/kill") @=> OscEvent killWaiter;
 killWaiter => now;
-<<< "got it" >>>;
+<<< "You have been killed by the server." >>>;
 me.exit();

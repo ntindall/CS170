@@ -52,5 +52,3 @@ public class HSV {
   }
 
 }
-
-while (true) 1::day => now;

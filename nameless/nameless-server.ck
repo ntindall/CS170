@@ -653,7 +653,7 @@ fun void keyboard()
     {
       if (msg.isButtonDown())
       {
-        <<< msg.which >>>;
+        //<<< msg.which >>>;
 
         //r
         if (msg.which == 21)
@@ -826,6 +826,7 @@ recv.listen();
 //begin sending the clock
 spork ~sendClock();
 
+//init keyboard
 spork ~keyboard();
 
 //wait for heartbeats from everyone

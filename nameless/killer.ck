@@ -5,7 +5,7 @@ xmit.init(me.arg(0));
 for (int z; z < xmit.targets(); z++)
 {
   // a message is kicked as soon as it is complete 
-  <<< "Killing 1" >>>;
+  <<< "Killing", z >>>;
   xmit.at(z).startMsg( "/slork/kill");
 }
 <<< "Done" >>>;

@@ -16,5 +16,3 @@ public class ActionEnum {
     return -1;
   }
 }
-
-while (true) 1::day => now;
