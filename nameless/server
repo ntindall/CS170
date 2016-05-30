@@ -1,10 +1,10 @@
 # trap ctrl-c and call ctrl_c()
 trap ctrl_c INT
 
+VAR=$1 
+
 function ctrl_c() {
-        echo "** Trapped CTRL-C"
-        echo "Killing all clients"
-        chuck killall-clients.ck:$1
+        chuck killall-clients.ck:$VAR
 }
 
 

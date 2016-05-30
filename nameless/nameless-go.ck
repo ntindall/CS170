@@ -570,10 +570,8 @@ fun void bass()
   env.keyOn();
   10::second => now; 
   env.keyOff();
-
+å
   env.releaseTime() => now;
-
-
 }
 
 /******************************************************************** CONTROL */
@@ -584,4 +582,10 @@ spork ~bassMonitor();
 spork ~stateMonitor();
 spork ~network();
 spork ~xmitHeartbeat();
-client();
+spork ~client();
+
+<<< "test" >>>;
+recv.event( "/slork/kill") @=> OscEvent killWaiter;
+killWaiter => now;
+<<< "got it" >>>;
+me.exit();
