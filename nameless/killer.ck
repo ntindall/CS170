@@ -1,7 +1,7 @@
 Xmitter xmit;
 xmit.init(me.arg(0));
 
-100 => int NUM_TRIES;
+10 => int NUM_TRIES;
 
 <<< "Killing all clients" >>>;
 

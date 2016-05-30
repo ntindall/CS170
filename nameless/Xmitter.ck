@@ -14,6 +14,7 @@ public class Xmitter
   {
     if (arg == "local" || arg == "l" || arg == "localhost")
     {
+      <<< "Initializing Xmitter for local" >>>;
       1 => num_targets;
 
       //write into the bassIndexes array negative numbers if you want less than
@@ -22,6 +23,7 @@ public class Xmitter
       backing[0].setHost ( "localhost", port );
     } else 
     {
+      <<< "Initializing Xmitter for non-local" >>>;
       //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
       //subwoofers... 
       [0, 1, 2] @=> bassIndexes;
