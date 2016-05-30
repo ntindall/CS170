@@ -28,8 +28,8 @@ public class Xmitter
 
       2 => num_targets;
 
-      backing[0].setHost ( "localhost", port);
-      backing[1].setHost ( "Rachel.local", port);
+      backing[1].setHost ( "localhost", port);
+      backing[0].setHost ( "Rachel.local", port);
       
       /*
       //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE

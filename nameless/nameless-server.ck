@@ -267,7 +267,7 @@ fun void targetinit() {
   }
 }
 
-fun string printGrid(int targetIdx) {
+fun string printGrid(int id, int targetIdx) {
 
   "----------------------------\n" => string result;
   for( height - 1 => int y; y >= 0; y--) 
@@ -279,7 +279,7 @@ fun string printGrid(int targetIdx) {
 
       if (grid[idx].isOccupied()) 
       {
-        if (targetIdx == idx) 
+        if (targetIdx == idx && (grid[idx].who[id] != 0))
         {
           //todo, be smarter about commandline feedback to give clients
           //information about state
@@ -314,7 +314,7 @@ fun void updateClient(int z) {
   curPlayer.color.s                            => xmit.at(z).addInt;
   curPlayer.color.v                            => xmit.at(z).addInt;
 
-  printGrid(curPlayer.y*width+curPlayer.x) => xmit.at(z).addString;
+  printGrid(z, curPlayer.y*width+curPlayer.x) => xmit.at(z).addString;
 
 
   attackMs[curPlayer.whichEnv]    => xmit.at(z).addInt;

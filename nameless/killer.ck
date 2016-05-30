@@ -1,12 +1,19 @@
 Xmitter xmit;
 xmit.init(me.arg(0));
 
+100 => int NUM_TRIES;
+
 <<< "Killing all clients" >>>;
-for (int z; z < xmit.targets(); z++)
+
+for (int iteration; iteration < NUM_TRIES; iteration++)
 {
-  // a message is kicked as soon as it is complete 
-  <<< "Killing", z >>>;
-  xmit.at(z).startMsg( "/slork/kill");
+  for (int z; z < xmit.targets(); z++)
+  {
+    // a message is kicked as soon as it is complete 
+    <<< "Attempt", iteration, "... killing", z >>>;
+    xmit.at(z).startMsg( "/slork/kill" );
+  }
+  10::ms => now;
 }
-<<< "Done" >>>;
+<<< "Done (no guarantee they died, though... yay UDP)" >>>;
 1::second => now;
