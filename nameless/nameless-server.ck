@@ -743,44 +743,12 @@ fun void keyboard()
         }
         //ADSR control
 
-        //1
-        if (msg.which == 30) spork ~changeSection(1);
-
-        //2
-        if (msg.which == 31) spork ~changeSection(2);
-
-        //3
-        if (msg.which == 32) spork ~changeSection(3);
-
-        //4
-        if (msg.which == 33) spork ~changeSection(4);
-        /*
-
-        //,
-        if (msg.which == 54)
+        //sectin changes
+        if (msg.which >= 30 && msg.which <= 39) 
         {
-          warmGain - 0.01 => warmGain;
-          coolGain + 0.01 => coolGain;
-
-          if (warmGain < 0) 0 => warmGain;
-          if (coolGain > 0.1) 0.1 => coolGain;
-
-          <<< "Cool gain: ", coolGain, "Warm gain:", warmGain >>>; 
+          //constrain input to 1-0
+          spork ~changeSection(msg.which - 29);
         }
-
-        //.
-        if (msg.which == 55)
-        {
-          warmGain + 0.01 => warmGain;
-          coolGain - 0.01 => coolGain;
-
-          if (warmGain > 0.1) 0.1 => warmGain;
-          if (coolGain < 0) 0 => coolGain;
-
-          <<< "Cool gain: ", coolGain, "Warm gain:", warmGain >>>; 
-
-        }
-        */
       }
     }
   }
@@ -791,35 +759,81 @@ fun void keyboard()
 fun void changeSection(int WHICH)
 {
 
-  //todo, set the whichEnv values of each player to different values
-  //depending on which envelope you want them to play
+  //set front row to envelope 1
   if (WHICH == 1)
   {
-    for (int z; z < xmit.targets(); z++)
+    <<< "[ENV] SETTING FRONT ROW TO 1" >>>;
+    for (int z; z < xmit.front(); z++)
     {
       0 => positions[z].whichEnv;
     }
   }
 
+  //set front row to envelope 2
   if (WHICH == 2)
   {
-    for (int z; z < xmit.targets(); z++)
+    <<< "[ENV] SETTING FRONT ROW TO 2" >>>;
+    for (int z; z < xmit.front(); z++)
     {
       1 => positions[z].whichEnv;
     }
   }
 
+  //set front row to envelope 3
   if (WHICH == 3)
   {
-        for (int z; z < xmit.targets(); z++)
+    <<< "[ENV] SETTING FRONT ROW TO 3" >>>;
+    for (int z; z < xmit.front(); z++)
     {
       2 => positions[z].whichEnv;
     }
   }
 
+  //set front row to envelope 4
   if (WHICH == 4)
   {
-    for (int z; z < xmit.targets(); z++)
+    <<< "[ENV] SETTING FRONT ROW TO 4" >>>;
+    for (int z; z < xmit.front(); z++)
+    {
+      3 => positions[z].whichEnv;
+    }
+  }
+
+  //set back row to envelope 1
+  if (WHICH == 7)
+  {
+    <<< "[ENV] SETTING BACK ROW TO 1" >>>;
+    for (xmit.front() => int z; z < xmit.targets(); z++)
+    {
+      0 => positions[z].whichEnv;
+    }
+  }
+
+  //set back row to envelope 2
+  if (WHICH == 8)
+  {
+    <<< "[ENV] SETTING BACK ROW TO 2" >>>;
+    for (xmit.front() => int z; z < xmit.targets(); z++)
+    {
+      1 => positions[z].whichEnv;
+    }
+  }
+
+  //set back row to envelope 3
+  if (WHICH == 9)
+  {
+    <<< "[ENV] SETTING BACK ROW TO 3" >>>;
+    for (xmit.front() => int z; z < xmit.targets(); z++)
+    {
+      2 => positions[z].whichEnv;
+    }
+  }
+
+  //set back row to envelope 4
+  if (WHICH == 10)
+  {
+    <<< "[ENV] SETTING BACK ROW TO 4" >>>;
+    for (xmit.front() => int z; z < xmit.targets(); z++)
     {
       3 => positions[z].whichEnv;
     }

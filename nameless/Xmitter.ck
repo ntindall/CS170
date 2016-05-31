@@ -10,6 +10,9 @@ public class Xmitter
   3 => int NUM_BASS;
   int bassIndexes[NUM_BASS];
 
+  5 => int NUM_IN_FRONT;
+  7 => int NUM_IN_BACK;
+
   fun void init(string arg)
   {
     if (arg == "local" || arg == "l" || arg == "localhost")
@@ -24,9 +27,6 @@ public class Xmitter
     } else 
     {
       <<< "Initializing Xmitter for non-local" >>>;
-      //TO CONFIG... assumes that hosts 0 1 2 are the three hosts with
-      //subwoofers... 
-      [0, 1, 2] @=> bassIndexes;
 
       2 => num_targets;
 
@@ -36,18 +36,24 @@ public class Xmitter
       
       /*
       //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-      11 => num_targets;
-      backing[0].setHost ( "albacore.local", port );
-      backing[1].setHost ( "kimchi.local", port );
-      backing[2].setHost ( "jambalaya.local", port );
+      12 => num_targets;
+
+      //subwoofers... chowder, lasagne, and kimchi
+      [2, 5, 11] @=> bassIndexes;
+
+      //NOTE: CONFIGURED SPECIFICALLY WITH BING IN MIND!!!
+      backing[0].setHost ( "spam.local", port );
+      backing[1].setHost ( "pho.local", port );
+      backing[2].setHost ( "chowder.local", port );
       backing[3].setHost ( "vindaloo.local", port );
-      backing[4].setHost ( "spam.local", port );
-      backing[5].setHost ( "hamburger.local", port );
-      backing[6].setHost ( "pho.local", port );
+      backing[4].setHost ( "jambalaya.local", port );
+      backing[5].setHost ( "lasagna.local", port );
+      backing[6].setHost ( "nachos.local", port );
       backing[7].setHost ( "foiegras.local", port );
-      backing[8].setHost ( "lasagna.local", port );
-      backing[9].setHost ( "meatloaf.local", port );
-      backing[10].setHost ( "chowder.local", port );
+      backing[8].setHost ( "meatloaf.local", port );
+      backing[9].setHost ( "hamburger.local", port );
+      backing[10].setHost ( "albacore.local", port );
+      backing[11].setHost ( "kimchi.locak", port)
       */
     }
   }
@@ -65,5 +71,15 @@ public class Xmitter
   fun int[] basses()
   {
     return bassIndexes;
+  }
+
+  fun int front()
+  {
+    return NUM_IN_FRONT;
+  }
+
+  fun int back()
+  {
+    return NUM_IN_FRONT;
   }
 }
