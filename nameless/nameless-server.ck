@@ -105,6 +105,21 @@ OscRecv recv;
 // use port 6449
 6451 => recv.port;
 
+/************************************************************************ MIDI */
+
+0 => int device;
+// the midi event
+MidiIn min;
+// the message for retrieving data
+MidiMsg msg;
+
+// open the device
+if( !min.open( device ) ) me.exit();
+
+// print out device that was opened
+<<< "MIDI device:", min.num(), " -> ", min.name() >>>;
+
+
 /***************************************************************** HEARTBEATS */
 
 recv.event( "/slork/synch/heartbeat, i" ) @=> OscEvent he;
@@ -359,7 +374,7 @@ fun void updateClient(int z) {
   releaseMs[curPlayer.whichEnv]   => xmit.at(z).addInt; 
 }
 
-fun void sendBass() {
+fun void sendBass(int midiNote) {
 
   //only send to whoever has a bass
   for (int z; z < xmit.basses().cap(); z++)
@@ -367,7 +382,12 @@ fun void sendBass() {
     xmit.basses()[z] => int subwoofer_idx;
 
     //hack to make local work
-    if (subwoofer_idx >= 0) xmit.at(subwoofer_idx).startMsg( "/slork/synch/bass" );
+    if (subwoofer_idx >= 0) 
+    {
+      xmit.at(subwoofer_idx).startMsg( "/slork/synch/bass", "i" );
+      midiNote => xmit.at(subwoofer_idx).addInt;
+    }
+
   }
 }
 
@@ -759,13 +779,6 @@ fun void keyboard()
 
         // bass sending
 
-        //x
-        if (msg.which == 27)
-        {
-          spork ~sendBass();
-        }
-        //ADSR control
-
         //sectin changes
         if (msg.which >= 30 && msg.which <= 39) 
         {
@@ -784,6 +797,33 @@ fun void keyboard()
         {
           spork ~mutateSaturation(-1);
         }
+      }
+    }
+  }
+}
+
+fun void midi()
+{
+  // the message
+  MidiMsg msg;
+
+  // infinite event loop
+  while( true )
+  {
+    // wait on event
+    min => now;
+
+    // print message
+    while( min.recv( msg ) )
+    {
+      // print out midi message with id
+      <<< "device", device, ":", msg.data1, msg.data2, msg.data3 >>>;
+      
+      //key down
+      if (msg.data1 == 128)
+      {
+        //data 2 contains MIDI number
+        spork ~sendBass(msg.data2);
       }
     }
   }
@@ -896,6 +936,9 @@ spork ~sendClock();
 
 //init keyboard
 spork ~keyboard();
+
+//init midi
+spork ~midi();
 
 //wait for heartbeats from everyone
 waitForHeartbeats();

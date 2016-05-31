@@ -22,7 +22,7 @@ public class Xmitter
 
       //write into the bassIndexes array negative numbers if you want less than
       //NUM_BASS basses (handled as special case by the sendBass function)
-      [0, 0, 0] @=> bassIndexes;
+      [0, -1, -1] @=> bassIndexes;
       backing[0].setHost ( "localhost", port );
     } else 
     {

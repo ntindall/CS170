@@ -350,7 +350,7 @@ fun void clockMonitor()
 
 fun void bassMonitor()
 {
-  recv.event( "/slork/synch/bass") @=> OscEvent be;
+  recv.event( "/slork/synch/bass, i") @=> OscEvent be;
 
   while (true)
   {
@@ -358,7 +358,8 @@ fun void bassMonitor()
 
     if (be.nextMsg() != 0)
     {
-      spork ~bass();
+      be.getInt() => int note;
+      spork ~bass(note);
     }
   }
 }
@@ -619,14 +620,14 @@ fun void modWhiteOscFreq(TwoPole @ filter)
 
 }
 
-fun void bass()
+fun void bass(int note)
 {
   <<< "BASS SPORKED BY SERVER... DO NOT BE ALARMED" >>>;
   SinOsc s => ADSR env => globalG;
-  s.freq(Std.mtof(pitch) / 2);
-  s.gain(0.4); //tone it down
+  s.freq(Std.mtof(note));
+  s.gain(0.3); //tone it down
 
-  env.set(10::second, 0::second, 0.5, 10::second);
+  env.set(6::second, 3::second, 0.5, 3::second);
 
   env.keyOn();
   10::second => now; 
