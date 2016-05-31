@@ -9,6 +9,8 @@
 //if nonzero, server has indicated it is safe to begin.
 0 => int pieceIsActive;
 
+100 => int globalSaturation;
+
 [10000, 20000, 1000, 50 ] @=> int attackMs[];
 [10000, 10000, 1000, 100 ] @=> int decayMs[];
 [0.1  , 0.8  , 0.5,  0.1 ] @=> float sustainGain[];
@@ -272,11 +274,33 @@ fun void targetinit() {
     0 => positions[i].y;
 
     positions[i].color.getWarm() => positions[i].color.h;
-    100 => positions[i].color.s;
+    globalSaturation => positions[i].color.s;
     100 => positions[i].color.v;
 
     //time automatically zero initialized
   }
+}
+
+fun void mutateSaturation(int delta) {
+  if (delta < 0)
+  {
+    globalSaturation - 5 => globalSaturation;
+    if (globalSaturation < 0) 0 => globalSaturation;
+  } else
+  {
+    globalSaturation + 5 => globalSaturation;
+    if (globalSaturation > 100) 100 => globalSaturation;
+  }
+
+  <<< "[!][!][!][!] GLOBAL SATURATION:", globalSaturation >>>;
+
+  for (int i; i < xmit.targets(); i++)
+  {
+    globalSaturation => positions[i].color.s;
+  }
+
+  //let everyone know.
+  updateClients();
 }
 
 fun string printGrid(int id, int targetIdx) {
@@ -388,7 +412,7 @@ fun void handleClient() {
       oe.getInt() => int dY;
       oe.getInt() => int dX;
 
-      <<< id, dY, dX >>>;
+      //<<< id, dY, dX >>>;
 
       //they are leaving the grid, send a fade out message
       if (dY == 0 && dX == 0 
@@ -473,14 +497,14 @@ fun void handleAction() {
       if (actionId == ActionEnum.jump())
       {
         //update graphics
-        <<< "Jump received!!! from ", id >>>;
+        //<<< "Jump received!!! from ", id >>>;
         spork ~g_playerJump(id);
       }
 
       if (actionId == ActionEnum.tinkle())
       {
         //update graphics
-        <<< "Tinkle received!!! from ", id >>>;
+        //<<< "Tinkle received!!! from ", id >>>;
         spork ~g_playerTinkle(id, actionParam);
       }
 
@@ -548,7 +572,6 @@ fun void slewIdxColor(int z, int hue)
 
 
 fun void slewColors(int hue) {
-  <<< "slewing" >>>;
   for( 0 => int z; z < xmit.targets(); z++ ) 
   {  
     //calculate index
@@ -667,7 +690,7 @@ fun void keyboard()
     {
       if (msg.isButtonDown())
       {
-        <<< msg.which >>>;
+        //<<< msg.which >>>;
 
         //r
         if (msg.which == 21)
@@ -748,6 +771,18 @@ fun void keyboard()
         {
           //constrain input to 1-0
           spork ~changeSection(msg.which - 29);
+        }
+
+        //up arrow, increase saturation
+        if (msg.which == 82)
+        {
+          spork ~mutateSaturation(1);
+        }
+
+        //down arrow, decrease saturation
+        if (msg.which == 81)
+        {
+          spork ~mutateSaturation(-1);
         }
       }
     }

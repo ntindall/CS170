@@ -397,11 +397,13 @@ fun void adjustOsc() {
 
   s $ float / 100 => float amountSat;
 
-  redGain.gain()   - (1 - amountSat) => redGain.gain;
-  blueGain.gain()  - (1 - amountSat) => blueGain.gain;
-  greenGain.gain() - (1 - amountSat) => greenGain.gain;
+  redGain.gain()   * (amountSat) => redGain.gain;
+  blueGain.gain()  * (amountSat) => blueGain.gain;
+  greenGain.gain() * (amountSat) => greenGain.gain;
 
   1 - amountSat => whiteGain.gain;
+
+  <<< whiteGain.gain(), redGain.gain(), blueGain.gain(), greenGain.gain() >>>;
 }
 
 fun void adjustLPF()
@@ -519,14 +521,16 @@ fun void drone()
   greenOsc => greenEnv;
 
   // white osc
-  BlowBotl whiteOsc;
-  whiteOsc => whiteEnv;
+  Noise whiteOsc => TwoPole z => whiteEnv;
+  1 => z.norm;
+  0.995 => z.radius;
 
   /* Pitch selection */
   Std.mtof(pitch) => redOsc.freq;
   Std.mtof(pitch) / 2 => blueOsc.freq;
   Std.mtof(pitch) => greenOsc.freq;
-  Std.mtof(pitch) => whiteOsc.freq;
+  Std.mtof(pitch) => z.freq;
+  spork ~modWhiteOscFreq(z);
 
   /* ADSR Tuning (controlled by server) */
 
@@ -542,7 +546,6 @@ fun void drone()
   1 => redOsc.noteOn;
   1 => blueOsc.noteOn;
   1 => greenOsc.noteOn;
-  1 => whiteOsc.noteOn;
 
   //sync!
   clock => now;
@@ -563,7 +566,6 @@ fun void drone()
   1 => redOsc.noteOff;
   1 => blueOsc.noteOff;
   1 => greenOsc.noteOff;
-  1 => whiteOsc.noteOff;
 }
 
 /* modulators */
@@ -577,6 +579,19 @@ fun void modBlueOscVib(Clarinet @osc) {
     (lfo.last() + 1) / 10.0 + 0.1 => osc.vibratoGain;
     1::samp => now;
   }
+}
+
+fun void modWhiteOscFreq(TwoPole @ filter)
+{
+  SinOsc lfo => blackhole;
+  0.1 => lfo.freq;
+
+  filter.freq() => float freq;
+  while (true) {
+    freq * (1 + lfo.last() / 100.0) => filter.freq;
+    1::samp => now;
+  }
+
 }
 
 fun void bass()
