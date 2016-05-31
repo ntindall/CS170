@@ -620,12 +620,37 @@ fun void modWhiteOscFreq(TwoPole @ filter)
 
 }
 
+fun void slewLPFcutoff(LPF @ lpf)
+{
+   lpf.freq() => float start;
+   8000 => float goal;
+
+   while (lpf.freq() < goal)
+   {
+    lpf.freq() * 1.03 => lpf.freq;
+    100::ms => now;
+   }
+
+   while (lpf.freq() > start )
+   {
+    lpf.freq() / 1.03 => lpf.freq;
+    100::ms => now;
+   }
+
+
+}
+
 fun void bass(int note)
 {
   <<< "BASS SPORKED BY SERVER... DO NOT BE ALARMED" >>>;
-  SinOsc s => ADSR env => globalG;
+  SawOsc s => LPF l => ADSR env => globalG;
+  l.freq(1000);
   s.freq(Std.mtof(note));
   s.gain(0.3); //tone it down
+
+  if (HSV.isWarm(h)) {
+    spork ~slewLPFcutoff(l);
+  }
 
   env.set(6::second, 3::second, 0.5, 3::second);
 
@@ -635,6 +660,7 @@ fun void bass(int note)
 
   env.releaseTime() => now;
 }
+
 
 /******************************************************************** CONTROL */
 
