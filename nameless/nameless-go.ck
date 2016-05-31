@@ -364,11 +364,12 @@ r.mix(0.05);
 //global tinkler outgraph
 ResonZ tinklerZ => globalG;
 
-Gain redGain, blueGain, greenGain;
-0.8 => redGain.gain => blueGain.gain => greenGain.gain;
+Gain redGain, blueGain, greenGain, whiteGain;
+0.8 => redGain.gain => blueGain.gain => greenGain.gain => whiteGain.gain;
 redGain => globalG;
 blueGain => globalG;
 greenGain => globalG;
+whiteGain => globalG;
 
 fun void adjustOsc() {
   (h $ float ) / 120 => float oscBalance;
@@ -393,6 +394,14 @@ fun void adjustOsc() {
     oscBalance     => redGain.gain;
     0              => greenGain.gain;
   }
+
+  s $ float / 100 => float amountSat;
+
+  redGain.gain()   - (1 - amountSat) => redGain.gain;
+  blueGain.gain()  - (1 - amountSat) => blueGain.gain;
+  greenGain.gain() - (1 - amountSat) => greenGain.gain;
+
+  1 - amountSat => whiteGain.gain;
 }
 
 fun void adjustLPF()
@@ -480,10 +489,12 @@ fun void drone()
   ADSR redEnv;
   ADSR blueEnv;
   ADSR greenEnv;
+  ADSR whiteEnv;
 
   redEnv => redGain;
   blueEnv => blueGain;
   greenEnv => greenGain;
+  whiteEnv => whiteGain;
   
   //* warm osc */
   BeeThree redOsc;
@@ -505,13 +516,17 @@ fun void drone()
 
   // green osc
   HevyMetl greenOsc;
-
   greenOsc => greenEnv;
+
+  // white osc
+  BlowBotl whiteOsc;
+  whiteOsc => whiteEnv;
 
   /* Pitch selection */
   Std.mtof(pitch) => redOsc.freq;
   Std.mtof(pitch) / 2 => blueOsc.freq;
   Std.mtof(pitch) => greenOsc.freq;
+  Std.mtof(pitch) => whiteOsc.freq;
 
   /* ADSR Tuning (controlled by server) */
 
@@ -521,11 +536,13 @@ fun void drone()
   redEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
   blueEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
   greenEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
+  whiteEnv.set(attackMs::ms, decayMs::ms, sustainGain, releaseMs::ms);
 
     /* Patch */
   1 => redOsc.noteOn;
   1 => blueOsc.noteOn;
   1 => greenOsc.noteOn;
+  1 => whiteOsc.noteOn;
 
   //sync!
   clock => now;
@@ -533,10 +550,12 @@ fun void drone()
   redEnv.keyOn();
   blueEnv.keyOn();
   greenEnv.keyOn();
+  whiteEnv.keyOn();
   playerMoved => now;
   redEnv.keyOff();
   greenEnv.keyOff();
   blueEnv.keyOff();
+  whiteEnv.keyOff();
 
   //release
   releaseTime => now;
@@ -544,6 +563,7 @@ fun void drone()
   1 => redOsc.noteOff;
   1 => blueOsc.noteOff;
   1 => greenOsc.noteOff;
+  1 => whiteOsc.noteOff;
 }
 
 /* modulators */
