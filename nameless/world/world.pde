@@ -12,8 +12,8 @@ Colors colors = new Colors();
 
 // update variables as per world
 int N_PLAYERS = 3;
-int WIDTH = 14;
-int HEIGHT = 14;
+int WIDTH = 12;
+int HEIGHT = 12;
 
 float WORLD_SIZE = 960;
 float CELL_SIZE = WORLD_SIZE / WIDTH;

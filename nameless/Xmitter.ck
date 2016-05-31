@@ -28,10 +28,10 @@ public class Xmitter
       //subwoofers... 
       [0, 1, 2] @=> bassIndexes;
 
-      3 => num_targets;
+      2 => num_targets;
 
       backing[0].setHost ( "localhost", port);
-      backing[1].setHost ( "Nathan.local", port);
+      backing[1].setHost ( "Trijeet.local", port);
       backing[2].setHost ( "HipstersMustDie.local", port);
       
       /*

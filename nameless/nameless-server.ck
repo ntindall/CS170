@@ -3,8 +3,8 @@
 200::ms => dur T;
 
 // dimensions
-14 => int height;
-14 => int width;
+12 => int height;
+12 => int width;
 
 //if nonzero, server has indicated it is safe to begin.
 0 => int pieceIsActive;
@@ -30,6 +30,9 @@ int dminor[width];
 28 => int YO;
 int yo[width];
 
+29 => int ASCENDING;
+int ascending[width];
+
 fun void initscales()
 {
   60 => int C;
@@ -46,19 +49,22 @@ fun void initscales()
   71 => int B;
 
   [C-24, E-24, Gb-24, G-24, B-24, C-12, E-12, Gb-12, G-12, 
-         E-12, C-12, B-24, G-24, E-24] @=> hirajoshi;
+         E-12, C-12, B-24] @=> hirajoshi;
 
   [C-24, D-24, E-24, G-24, A-24, C-12, D-12, E-12, G-12, 
-         E-12, D-12, C-24, G-24, D-24] @=> pentatonic;
+         E-12, D-12, C-24] @=> pentatonic;
 
   [A-36, C-24, E-24, A-24, C-12, D-12, E-12, A-12, E-12, 
-         C-12, B-24, A-24, D-24, C-24] @=> aminor;
+         C-12, B-24, A-24] @=> aminor;
 
   [D-36, A-36, C-24, D-24, F-24, A-12, D-12, A-12, F-12, 
-         D-12, A-24, F-24, E-24, D-24] @=> dminor;
+         D-12, A-24, D-24] @=> dminor;
 
   [D-24, E-24, G-24, A-24, C-12, D-12, E-12, G-12, E-12,
-         D-12, B-24, A-24, G-24 ,E-24] @=> yo;
+         D-12, B-24, A-24] @=> yo;
+
+  [G-36, A-36, B-36, D-24, E-24, F-24, G-24, A-24, B-24,
+         D-12, E-12, F-12, G-12] @=> ascending;
 }
 
 /************************************************* Global Grid Initialization */
@@ -233,6 +239,12 @@ fun void gridinit(int which) {
     <<< "Scale: YO" >>>;
   }
 
+  if (which == ASCENDING)
+  {
+    ascending @=> scale;
+    <<< "Scale: ASCENDING" >>>;
+  }
+
   for( 0 => int y; y < height; y++ ) 
   {
     for( 0 => int x; x < width; x++ ) 
@@ -283,13 +295,13 @@ fun string printGrid(int id, int targetIdx) {
         {
           //todo, be smarter about commandline feedback to give clients
           //information about state
-          "X  " +=> result;
+          "█  " +=> result;
 
         } else {
-          "1  " +=> result;
+          "o  " +=> result;
         }
       } else {
-        "0  " +=> result;
+        ".  " +=> result;
       }
     }
     "\n" +=> result;
@@ -655,7 +667,7 @@ fun void keyboard()
     {
       if (msg.isButtonDown())
       {
-        //<<< msg.which >>>;
+        <<< msg.which >>>;
 
         //r
         if (msg.which == 21)
@@ -716,6 +728,12 @@ fun void keyboard()
           spork ~gridinit(YO);
         }
 
+        //z
+        if (msg.which == ASCENDING)
+        {
+          spork ~gridinit(ASCENDING);
+        }
+
         // bass sending
 
         //x
@@ -723,7 +741,6 @@ fun void keyboard()
         {
           spork ~sendBass();
         }
-
         //ADSR control
 
         //1
