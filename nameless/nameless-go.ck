@@ -62,6 +62,13 @@ int h;
 int s;
 int v;
 
+//rate limit shreds to prevent clipping
+3 => int NUM_TINKLERS_ALLOWED;
+0 => int numTinklers;
+
+6 => int NUM_DRONES_ALLOWED;
+0 => int numDrones;
+
 //init to something reasonable
 20000 => int attackMs;
 0     => int decayMs;
@@ -157,6 +164,8 @@ fun void network()
         <<< pitch, h,s,v >>>;
 
         <<< oe.getString() >>>;
+        <<< "[INFO] a:", attackMs, "d:", decayMs, "s:", sustainGain, 
+                   "r:", releaseMs, "tink:", numTinklers, "drn:", numDrones >>>;
 
         oe.getInt()   => attackMs;
         oe.getInt()   => decayMs;
@@ -359,13 +368,16 @@ fun void bassMonitor()
 Gain globalG => NRev r => dac;
 //LPF globalLPF => Gain globalG => NRev r => dac;
 // globalLPF.freq(1000);
-r.mix(0.05);
+r.mix(0.1);
+globalG.gain(0.8);
 
 //global tinkler outgraph
 ResonZ tinklerZ => globalG;
 
 Gain redGain, blueGain, greenGain, whiteGain;
-0.8 => redGain.gain => blueGain.gain => greenGain.gain => whiteGain.gain;
+0.8 => redGain.gain => blueGain.gain => greenGain.gain;
+0.5 => whiteGain.gain;
+
 redGain => globalG;
 blueGain => globalG;
 greenGain => globalG;
@@ -397,13 +409,13 @@ fun void adjustOsc() {
 
   s $ float / 100 => float amountSat;
 
-  redGain.gain()   * (amountSat) => redGain.gain;
-  blueGain.gain()  * (amountSat) => blueGain.gain;
-  greenGain.gain() * (amountSat) => greenGain.gain;
+  redGain.gain()   * amountSat * amountSat => redGain.gain;
+  blueGain.gain()  * amountSat * amountSat => blueGain.gain;
+  greenGain.gain() * amountSat * amountSat => greenGain.gain;
 
   1 - amountSat => whiteGain.gain;
 
-  <<< whiteGain.gain(), redGain.gain(), blueGain.gain(), greenGain.gain() >>>;
+  //<<< whiteGain.gain(), redGain.gain(), blueGain.gain(), greenGain.gain() >>>;
 }
 
 fun void adjustLPF()
@@ -431,6 +443,9 @@ fun void jumpSound() {
 
 fun void tinkleSound(int amount)
 {
+  if (numTinklers + 1 > NUM_TINKLERS_ALLOWED) return;
+  numTinklers++;
+
   //blue patch
   Rhodey blueTinkler => HPF blueTinklerHPF;
   blueTinklerHPF => Gain blueTinklerGain => blueGain => tinklerZ;
@@ -468,7 +483,10 @@ fun void tinkleSound(int amount)
   //amount bounded between 0 and 9
   for (0 => int i; i < amount; i++)
   {
-    clock => now; //sync
+    //randomize rhythm
+    for (int j; j < Math.random2(1,2); j++) clock => now;
+
+   // clock => now; //sync
     blueTinkler.noteOn(lfo.last() + 1);
     greenTinkler.noteOn(lfo.last() + 1);
     redTinkler.noteOn((lfo.last() + 1) / 2);
@@ -483,11 +501,16 @@ fun void tinkleSound(int amount)
 
   //let die
   clock => now;
-}
 
+  numTinklers--;
+}
 
 fun void drone()
 {
+  //rate limit
+  if (numDrones + 1 > NUM_DRONES_ALLOWED) return;
+  numDrones++;
+
   ADSR redEnv;
   ADSR blueEnv;
   ADSR greenEnv;
@@ -566,6 +589,8 @@ fun void drone()
   1 => redOsc.noteOff;
   1 => blueOsc.noteOff;
   1 => greenOsc.noteOff;
+
+  numDrones--;
 }
 
 /* modulators */
@@ -606,7 +631,7 @@ fun void bass()
   env.keyOn();
   10::second => now; 
   env.keyOff();
-å
+
   env.releaseTime() => now;
 }
 

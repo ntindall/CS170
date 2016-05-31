@@ -11,10 +11,10 @@
 
 100 => int globalSaturation;
 
-[10000, 20000, 1000, 50 ] @=> int attackMs[];
-[10000, 10000, 1000, 100 ] @=> int decayMs[];
-[0.1  , 0.8  , 0.5,  0.1 ] @=> float sustainGain[];
-[5000 , 5000 , 1000, 100 ] @=> int releaseMs[];
+[10000, 5,    400, 50 ] @=> int attackMs[];
+[10000, 1000, 100, 100 ] @=> int decayMs[];
+[0.1  , 0.1,  0.5,  0.1 ] @=> float sustainGain[];
+[5000 , 100 , 500, 100 ] @=> int releaseMs[];
 
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
@@ -299,8 +299,8 @@ fun void mutateSaturation(int delta) {
     globalSaturation => positions[i].color.s;
   }
 
-  //let everyone know.
-  updateClients();
+  //let everyone know 
+  //updateClients(); //too much network? unclear
 }
 
 fun string printGrid(int id, int targetIdx) {
