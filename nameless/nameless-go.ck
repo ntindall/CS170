@@ -654,7 +654,7 @@ fun void bass(int note)
 
   l.freq(1000);
   Std.mtof(note) => warm.freq => cool.freq => green.freq;
-  0.5 => warm.gain => cool.gain => green.gain; //tone it down
+  0.8 => warm.gain => cool.gain => green.gain; //tone it down
 
   if (HSV.isWarm(h)) 
   {
