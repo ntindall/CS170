@@ -1,1 +1,1 @@
-processing-java --sketch=`pwd`/world --run
+processing-java --sketch=`pwd`/world --present
