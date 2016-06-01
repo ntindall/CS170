@@ -66,7 +66,7 @@ int v;
 3 => int NUM_TINKLERS_ALLOWED;
 0 => int numTinklers;
 
-4 => int NUM_DRONES_ALLOWED;
+6 => int NUM_DRONES_ALLOWED;
 0 => int numDrones;
 
 //init to something reasonable

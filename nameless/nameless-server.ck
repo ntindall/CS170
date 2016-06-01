@@ -11,10 +11,10 @@
 
 100 => int globalSaturation;
 
-[10000, 5,    400, 50 ] @=> int attackMs[];
-[10000, 1000, 5000, 100 ] @=> int decayMs[];
-[0.1  , 0.1,  0.01,  0.1 ] @=> float sustainGain[];
-[5000 , 100 , 25, 100 ] @=> int releaseMs[];
+[10000, 5,    400,  50 ] @=> int attackMs[];
+[10000, 1000, 1000, 100 ] @=> int decayMs[];
+[0.1  , 0.1,  0.1,  0.1 ] @=> float sustainGain[];
+[5000 , 100 , 1000, 100 ] @=> int releaseMs[];
 
 /********************************************************************* Scales */
 11 => int HIRAJOSHI;
