@@ -61,12 +61,12 @@ class Grid {
     alive = b;
   }
 
-  void draw() {
+  void draw(float h, float s, float b) {
     if (alive)
       for (GridCell cell : cells)
         cell.draw();
 
-    stroke(0, 0, 100, 10);
+    stroke(h, s, b, 10);
     strokeWeight(3);
 
     for (int i = 0; i <= n; ++i) {

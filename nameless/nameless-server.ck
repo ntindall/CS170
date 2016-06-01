@@ -699,43 +699,43 @@ fun void g_updateWorld(int which) {
   if (which == HIRAJOSHI) 
   {
     0 => h;
-    0 => s;
-    0 => b;
+    61 => s;
+    100 => b;
   }
 
   if (which == PENTATONIC)
   {
     229 => h;
-    30 => s;
-    10 => b;
+    61 => s;
+    100 => b;
   } 
 
   if (which == AMINOR)
   {
     306 => h;
-    30 => s;
-    10 => b;
+    61 => s;
+    100 => b;
   }
 
   if (which == DMINOR)
   {
-    0 => h;
-    0 => s;
-    10 => b;
+    49 => h;
+    61 => s;
+    100 => b;
   }
 
   if (which == YO)
   {
     110 => h;
-    30 => s;
-    10 => b;
+    61 => s;
+    100 => b;
   }
 
   if (which == ASCENDING)
   {
     182 => h;
-    30 => s;
-    10 => b;
+    61 => s;
+    100 => b;
   }
 
   graphicsXmit.startMsg("/nameless/graphics/world/color", "i i i");

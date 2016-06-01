@@ -62,10 +62,10 @@ void setup() {
 }
 
 void draw() {
-  background(worldH, worldS, worldB);
+  background(0);
 
   if (grid != null)
-    grid.draw();
+    grid.draw(worldH, worldS, worldB);
 
   if (blobs != null)
     for (int i = 0; i < N_PLAYERS; i++) {
@@ -113,9 +113,9 @@ void updateWorld(int h, int s, int b) {
   // worldS = s;
   // worldB = b;
 
-  Ani.to(this, 5, "worldH", h, Ani.SINE_IN_OUT);
-  Ani.to(this, 5, "worldS", s, Ani.SINE_IN_OUT);
-  Ani.to(this, 5, "worldB", b, Ani.SINE_IN_OUT);
+  Ani.to(this, 5, "worldH", h * 1.0, Ani.SINE_IN_OUT);
+  Ani.to(this, 5, "worldS", s * 1.0, Ani.SINE_IN_OUT);
+  Ani.to(this, 5, "worldB", b * 1.0, Ani.SINE_IN_OUT);
 }
 
 void showPlayer(int id) {
