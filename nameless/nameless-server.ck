@@ -699,42 +699,42 @@ fun void g_updateWorld(int which) {
   if (which == HIRAJOSHI) 
   {
     0 => h;
-    61 => s;
+    0 => s;
     100 => b;
   }
 
   if (which == PENTATONIC)
   {
-    229 => h;
+    0 => h;
     61 => s;
     100 => b;
   } 
 
   if (which == AMINOR)
   {
-    306 => h;
-    61 => s;
+    50 => h;
+    75 => s;
     100 => b;
   }
 
   if (which == DMINOR)
   {
-    49 => h;
-    61 => s;
+    180 => h;
+    70 => s;
     100 => b;
   }
 
   if (which == YO)
   {
-    110 => h;
+    202 => h;
     61 => s;
     100 => b;
   }
 
   if (which == ASCENDING)
   {
-    182 => h;
-    61 => s;
+    320 => h;
+    70 => s;
     100 => b;
   }
 
