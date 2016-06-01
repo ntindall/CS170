@@ -7,7 +7,7 @@ public class Xmitter
   // port
   6449 => int port;
 
-  3 => int NUM_BASS;
+  5 => int NUM_BASS;
   int bassIndexes[NUM_BASS];
 
   5 => int NUM_IN_FRONT;
@@ -22,17 +22,28 @@ public class Xmitter
 
       //write into the bassIndexes array negative numbers if you want less than
       //NUM_BASS basses (handled as special case by the sendBass function)
-      [0, -1, -1] @=> bassIndexes;
+      [0, 4, 6, 8, 10] @=> bassIndexes;
       backing[0].setHost ( "localhost", port );
     } else 
     {
       <<< "Initializing Xmitter for non-local" >>>;
 
-      2 => num_targets;
+      12 => num_targets;
 
-      backing[0].setHost ( "localhost", port);
-      backing[1].setHost ( "Nathan.local", port);
-      // backing[2].setHost ( "HipstersMustDie.local", port);
+      // front
+      backing[0].setHost ( "spam.local", port );
+      backing[1].setHost ( "pho.local", port );
+      backing[2].setHost ( "chowder.local", port );
+      backing[3].setHost ( "vindaloo.local", port );
+      backing[4].setHost ( "jambalaya.local", port );
+      // back
+      backing[5].setHost ( "lasagna.local", port );
+      backing[6].setHost ( "nachos.local", port );
+      backing[7].setHost ( "foiegras.local", port );
+      backing[8].setHost ( "meatloaf.local", port );
+      backing[9].setHost ( "hamburger.local", port );
+      backing[10].setHost ( "albacore.local", port );
+      backing[11].setHost ( "kimchi.locak", port);
       
       /*
       //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
@@ -80,6 +91,6 @@ public class Xmitter
 
   fun int back()
   {
-    return NUM_IN_FRONT;
+    return NUM_IN_BACK;
   }
 }
