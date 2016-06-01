@@ -312,6 +312,7 @@ fun void mutateSaturation(int delta) {
   for (int i; i < xmit.targets(); i++)
   {
     globalSaturation => positions[i].color.s;
+    g_updateColor(i);
   }
 
   //let everyone know 
@@ -681,6 +682,16 @@ fun void g_playerTinkle(int id, int tinkles) {
 fun void g_playerJump(int id) {
   graphicsXmit.startMsg("/nameless/graphics/player/jump", "i");
   id => graphicsXmit.addInt;
+}
+
+fun void g_updateColor(int id) {
+  graphicsXmit.startMsg("/nameless/graphics/player/color", "i i i i i i");
+  id => graphicsXmit.addInt;
+  positions[id].x => graphicsXmit.addInt;
+  positions[id].y => graphicsXmit.addInt;
+  positions[id].color.h => graphicsXmit.addInt;
+  positions[id].color.s => graphicsXmit.addInt;
+  positions[id].color.v => graphicsXmit.addInt;
 }
 
 /************************************************************************* IO */

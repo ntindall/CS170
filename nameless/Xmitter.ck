@@ -31,8 +31,8 @@ public class Xmitter
       2 => num_targets;
 
       backing[0].setHost ( "localhost", port);
-      backing[1].setHost ( "Trijeet.local", port);
-      backing[2].setHost ( "HipstersMustDie.local", port);
+      backing[1].setHost ( "Nathan.local", port);
+      // backing[2].setHost ( "HipstersMustDie.local", port);
       
       /*
       //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE

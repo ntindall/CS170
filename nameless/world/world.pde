@@ -47,6 +47,7 @@ void setup() {
    */
   oscP5.plug(this, "resetWorld", "/nameless/graphics/init");
   oscP5.plug(this, "updatePlayer", "/nameless/graphics/player/move");
+  oscP5.plug(this, "updatePlayerColor", "/nameless/graphics/player/color");
   oscP5.plug(this, "jumpPlayer", "/nameless/graphics/player/jump");
   oscP5.plug(this, "tinklePlayer", "/nameless/graphics/player/tinkle");
   oscP5.plug(this, "showPlayer", "/nameless/graphics/player/enter");
@@ -121,6 +122,11 @@ void jumpPlayer(int id) {
 void updatePlayer(int id, int x, int y, int h, int s, int b, int teleport) {
   blobs[id].setX(x, teleport);
   blobs[id].setY(y, teleport);
+  blobs[id].setColor(h, s, b);
+  grid.updateCell(id, x, y, h, s, b);
+}
+
+void updatePlayerColor(int id, int x, int y, int h, int s, int b) {
   blobs[id].setColor(h, s, b);
   grid.updateCell(id, x, y, h, s, b);
 }
