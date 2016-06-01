@@ -18,6 +18,10 @@ int HEIGHT = 12;
 float WORLD_SIZE = 960;
 float CELL_SIZE = WORLD_SIZE / WIDTH;
 
+float worldH = 0;
+float worldS = 0;
+float worldB = 0;
+
 // geometry
 Blob[] blobs = new Blob[N_PLAYERS];
 Grid grid;
@@ -46,6 +50,7 @@ void setup() {
    * the method test(int theA, int theB)
    */
   oscP5.plug(this, "resetWorld", "/nameless/graphics/init");
+  oscP5.plug(this, "updateWorld", "/nameless/graphics/world/color");
   oscP5.plug(this, "updatePlayer", "/nameless/graphics/player/move");
   oscP5.plug(this, "updatePlayerColor", "/nameless/graphics/player/color");
   oscP5.plug(this, "jumpPlayer", "/nameless/graphics/player/jump");
@@ -57,7 +62,7 @@ void setup() {
 }
 
 void draw() {
-  background(0);
+  background(worldH, worldS, worldB);
 
   if (grid != null)
     grid.draw();
@@ -101,6 +106,16 @@ void resetWorld(int n, int width, int height) {
   serverReady = true;
 
   initWorld();
+}
+
+void updateWorld(int h, int s, int b) {
+  // worldH = h;
+  // worldS = s;
+  // worldB = b;
+
+  Ani.to(this, 5, "worldH", h, Ani.SINE_IN_OUT);
+  Ani.to(this, 5, "worldS", s, Ani.SINE_IN_OUT);
+  Ani.to(this, 5, "worldB", b, Ani.SINE_IN_OUT);
 }
 
 void showPlayer(int id) {

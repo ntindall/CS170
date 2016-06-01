@@ -262,6 +262,8 @@ fun void gridinit(int which) {
     <<< "Scale: ASCENDING" >>>;
   }
 
+  g_updateWorld(which);
+
   for( 0 => int y; y < height; y++ ) 
   {
     for( 0 => int x; x < width; x++ ) 
@@ -314,9 +316,6 @@ fun void mutateSaturation(int delta) {
     globalSaturation => positions[i].color.s;
     g_updateColor(i);
   }
-
-  //let everyone know 
-  //updateClients(); //too much network? unclear
 }
 
 fun string printGrid(int id, int targetIdx) {
@@ -692,6 +691,57 @@ fun void g_updateColor(int id) {
   positions[id].color.h => graphicsXmit.addInt;
   positions[id].color.s => graphicsXmit.addInt;
   positions[id].color.v => graphicsXmit.addInt;
+}
+
+fun void g_updateWorld(int which) {
+  int h, s, b;
+
+  if (which == HIRAJOSHI) 
+  {
+    0 => h;
+    0 => s;
+    0 => b;
+  }
+
+  if (which == PENTATONIC)
+  {
+    229 => h;
+    30 => s;
+    10 => b;
+  } 
+
+  if (which == AMINOR)
+  {
+    306 => h;
+    30 => s;
+    10 => b;
+  }
+
+  if (which == DMINOR)
+  {
+    0 => h;
+    0 => s;
+    10 => b;
+  }
+
+  if (which == YO)
+  {
+    110 => h;
+    30 => s;
+    10 => b;
+  }
+
+  if (which == ASCENDING)
+  {
+    182 => h;
+    30 => s;
+    10 => b;
+  }
+
+  graphicsXmit.startMsg("/nameless/graphics/world/color", "i i i");
+  h => graphicsXmit.addInt;
+  s => graphicsXmit.addInt;
+  b => graphicsXmit.addInt;
 }
 
 /************************************************************************* IO */
