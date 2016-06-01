@@ -66,7 +66,7 @@ int v;
 3 => int NUM_TINKLERS_ALLOWED;
 0 => int numTinklers;
 
-6 => int NUM_DRONES_ALLOWED;
+4 => int NUM_DRONES_ALLOWED;
 0 => int numDrones;
 
 //init to something reasonable
@@ -376,8 +376,8 @@ globalG.gain(0.8);
 ResonZ tinklerZ => globalG;
 
 Gain redGain, blueGain, greenGain, whiteGain;
-0.8 => redGain.gain => blueGain.gain => greenGain.gain;
-0.5 => whiteGain.gain;
+0.5 => redGain.gain => blueGain.gain => greenGain.gain;
+0.2 => whiteGain.gain;
 
 redGain => globalG;
 blueGain => globalG;
@@ -419,13 +419,15 @@ fun void adjustOsc() {
   //<<< whiteGain.gain(), redGain.gain(), blueGain.gain(), greenGain.gain() >>>;
 }
 
+/*
 fun void adjustLPF()
 {
   //wolfram alpha query
   //(300, 4000),(0,12000),(60, 8000),(120,3000),(180,1200),(235,525), (270,1200), (360, 12000) function
 
-  // 0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
+   0.000886329*h*h*h -0.131224*h*h -67.811*h +12057.1 => globalLPF.freq;
 }
+*/
 
 fun void jumpSound() {
   Rhodey inst => LPF lpf => NRev rev => globalG;
@@ -643,10 +645,32 @@ fun void slewLPFcutoff(LPF @ lpf)
 fun void bass(int note)
 {
   <<< "BASS SPORKED BY SERVER... DO NOT BE ALARMED" >>>;
-  SawOsc s => LPF l => ADSR env => globalG;
+  ADSR env => globalG;
+
+  SawOsc warm => LPF l => env;
+  SinOsc cool => env;
+  BlitSquare green => env;
+  green.harmonics(4);
+
   l.freq(1000);
-  s.freq(Std.mtof(note));
-  s.gain(0.3); //tone it down
+  Std.mtof(note) => warm.freq => cool.freq => green.freq;
+  0.5 => warm.gain => cool.gain => green.gain; //tone it down
+
+  if (HSV.isWarm(h)) 
+  {
+    0 => cool.gain;
+    0 => green.gain;
+  }
+  else if (HSV.isGreen(h))
+  {
+    0 => warm.gain;
+    0 => cool.gain;
+  }
+  else //blue
+  {
+    0 => green.gain;
+    0 => warm.gain;
+  }
 
   if (HSV.isWarm(h)) {
     spork ~slewLPFcutoff(l);
