@@ -113,12 +113,12 @@ Gain globalG => NRev r => dac;
 r.mix(0.1);
 globalG.gain(0.8);
 
-//global tinkler outgraph
-ResonZ tinklerZ => globalG;
-
 Gain redGain, blueGain, greenGain, whiteGain;
 0.5 => redGain.gain => blueGain.gain => greenGain.gain;
 0.2 => whiteGain.gain;
+
+//tuned by knob from OSC by master
+1 => float tinkleGainMultiplier;
 
 redGain => globalG;
 blueGain => globalG;
@@ -407,10 +407,17 @@ fun void knobMonitor()
         (value $ float) / 100 => globalG.gain;
       }
 
+      if (which == 2)
+      {
+        (value $ float) / 10 => tinkleGainMultiplier;
+      }
+
       if (which == 5)
       {
         (value $ float) / 100 => r.mix;
       }
+
+     // tinkleGain.gain();
 
       //<<< "KNOB IN FLUX", r.mix(), globalG.gain() >>>;
     }
@@ -486,22 +493,22 @@ fun void tinkleSound(int amount)
 
   //blue patch
   Rhodey blueTinkler => HPF blueTinklerHPF;
-  blueTinklerHPF => Gain blueTinklerGain => blueGain => tinklerZ;
+  blueTinklerHPF => Gain blueTinklerGain => blueGain;
   blueTinklerHPF.freq(8000);
 
   //red patch
-  ModalBar redTinkler => Gain redTinklerGain => redGain => tinklerZ;
+  ModalBar redTinkler => Gain redTinklerGain => redGain;
   redTinkler.stickHardness(0);
   redTinkler.controlChange(16, 2);
 
   //green patch
   Wurley greenTinkler => HPF greenTinklerHPF;
-  greenTinklerHPF => Gain greenTinklerGain => greenGain => tinklerZ;
+  greenTinklerHPF => Gain greenTinklerGain => greenGain;
   greenTinklerHPF.freq(4000);
 
   //ramp gain
-  1 => blueTinklerGain.gain => redTinklerGain.gain;
-  0.25 => greenTinkler.gain;
+  tinkleGainMultiplier * 1 => blueTinklerGain.gain => redTinklerGain.gain;
+  tinkleGainMultiplier * 0.25 => greenTinkler.gain;
 
   //constrain pitch
   pitch => int realpitch;
@@ -513,7 +520,6 @@ fun void tinkleSound(int amount)
 
   //set pitch
   Std.mtof(realpitch) => blueTinkler.freq => redTinkler.freq => greenTinkler.freq;
-  Std.mtof(realpitch) => tinklerZ.freq;
 
   SinOsc lfo => blackhole;
   lfo.freq(0.1);
