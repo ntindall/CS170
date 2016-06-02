@@ -20,15 +20,18 @@ public class Xmitter
       <<< "Initializing Xmitter for local" >>>;
       1 => num_targets;
 
+      1 => NUM_BASS;
+
       //write into the bassIndexes array negative numbers if you want less than
       //NUM_BASS basses (handled as special case by the sendBass function)
-      [0, 4, 6, 8, 10] @=> bassIndexes;
+      [0] @=> bassIndexes;
       backing[0].setHost ( "localhost", port );
     } else 
     {
       <<< "Initializing Xmitter for non-local" >>>;
 
       12 => num_targets;
+      [0, 4, 6, 8, 10] @=> bassIndexes;
 
       // front
       backing[0].setHost ( "spam.local", port );
@@ -43,29 +46,7 @@ public class Xmitter
       backing[8].setHost ( "meatloaf.local", port );
       backing[9].setHost ( "hamburger.local", port );
       backing[10].setHost ( "albacore.local", port );
-      backing[11].setHost ( "kimchi.locak", port);
-      
-      /*
-      //NOTE: REMEMBER TO MODIFY TARGET VALUE OR WILL AOOBE
-      12 => num_targets;
-
-      //subwoofers... chowder, lasagne, and kimchi
-      [2, 5, 11] @=> bassIndexes;
-
-      //NOTE: CONFIGURED SPECIFICALLY WITH BING IN MIND!!!
-      backing[0].setHost ( "spam.local", port );
-      backing[1].setHost ( "pho.local", port );
-      backing[2].setHost ( "chowder.local", port );
-      backing[3].setHost ( "vindaloo.local", port );
-      backing[4].setHost ( "jambalaya.local", port );
-      backing[5].setHost ( "lasagna.local", port );
-      backing[6].setHost ( "nachos.local", port );
-      backing[7].setHost ( "foiegras.local", port );
-      backing[8].setHost ( "meatloaf.local", port );
-      backing[9].setHost ( "hamburger.local", port );
-      backing[10].setHost ( "albacore.local", port );
-      backing[11].setHost ( "kimchi.locak", port)
-      */
+      backing[11].setHost ( "kimchi.local", port);
     }
   }
 

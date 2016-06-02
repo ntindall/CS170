@@ -114,6 +114,8 @@ fun void netinit()
   //wait for one valid clock to get identifier
   ce => now;
 
+  if (canStart == 0) <<< "[STARTUP INFO] <- CLOCK RECEIVED" >>>;
+
   if (ce.nextMsg() != 0)
   {
     ce.getInt() => id;
@@ -184,6 +186,8 @@ fun void xmitHeartbeat()
 {
   while (true)
   {
+
+    if (canStart == 0) <<< "[STARTUP INFO] -> SENDING HEARTBEAT" >>>;
     xmit.startMsg( "/slork/synch/heartbeat", "i");
     id => xmit.addInt;
 
@@ -654,7 +658,7 @@ fun void bass(int note)
 
   l.freq(1000);
   Std.mtof(note) => warm.freq => cool.freq => green.freq;
-  0.8 => warm.gain => cool.gain => green.gain; //tone it down
+  0.16 => warm.gain => cool.gain => green.gain; //tone it down
 
   if (HSV.isWarm(h)) 
   {

@@ -134,7 +134,8 @@ fun void waitForHeartbeats()
   {
     //alive check
     true => int allAlive;
-
+ 
+    <<< "." >>>;
     for (int i; i < isAlive.cap(); i++)
     {
       if (isAlive[i] < 5)

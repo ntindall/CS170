@@ -11,7 +11,7 @@ OscP5 oscP5;
 Colors colors = new Colors();
 
 // update variables as per world
-int N_PLAYERS = 3;
+int N_PLAYERS = 12;
 int WIDTH = 12;
 int HEIGHT = 12;
 
