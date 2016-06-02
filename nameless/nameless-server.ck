@@ -699,7 +699,7 @@ fun void g_updateWorld(int which) {
   if (which == HIRAJOSHI) 
   {
     0 => h;
-    0 => s;
+    10 => s;
     100 => b;
   }
 
