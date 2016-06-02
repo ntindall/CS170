@@ -472,14 +472,34 @@ fun void adjustLPF()
 */
 
 fun void jumpSound() {
-  Rhodey inst => LPF lpf => NRev rev => globalG;
+  ModalBar inst => LPF lpf => NRev rev => globalG;
+
+  Sample kick;
+  kick.init("Kick7.wav");
+  kick.getBuff() => rev;
 
   lpf.freq(2000);
-  0.2 => rev.mix;
+  0.05 => rev.mix;
 
   clock => now;
 
+  kick.playWithJitter(0.3, 1);
+
   12 => int offset;
+  //if (pitch - offset < 36) 0 => offset;
+  Std.mtof(pitch - offset) => inst.freq;
+  inst.noteOn(1);
+
+  24 => offset;
+
+  40::ms => now;
+  //if (pitch - offset < 24) 0 => offset;
+  Std.mtof(pitch - offset) => inst.freq;
+  inst.noteOn(1);
+
+  0 => offset;
+
+  40::ms => now;
   Std.mtof(pitch - offset) => inst.freq;
   inst.noteOn(1);
 

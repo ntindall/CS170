@@ -10,7 +10,7 @@
 public class Sample {
     me.sourceDir() + "/samples/" => string path;
     SndBuf buff;
-    0.3 => float jitter;
+    0.2 => float jitter;
 
     fun void init(string file) {
         path + file => string filename;
@@ -42,7 +42,7 @@ public class Sample {
         0 => buff.gain;
         0 => buff.pos;
         Math.random2f(gain - jitter / 2, gain + jitter / 2) => buff.gain;
-        Math.random2f(rate - jitter / 2, rate + jitter / 2) => buff.rate;
+        Math.random2f(rate - (jitter * 2) / 2, rate + (jitter * 2) / 2) => buff.rate;
         rate => buff.rate;
     }
 

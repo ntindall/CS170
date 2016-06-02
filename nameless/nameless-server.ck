@@ -13,7 +13,7 @@
 
 [10000, 5,    400,  50 ] @=> int attackMs[];
 [10000, 1000, 1000, 100 ] @=> int decayMs[];
-[0.1  , 0.1,  0.1,  0.1 ] @=> float sustainGain[];
+[0.05 , 0.05, 0.05, 0.05] @=> float sustainGain[];
 [5000 , 100 , 1000, 100 ] @=> int releaseMs[];
 
 /********************************************************************* Scales */
@@ -352,7 +352,7 @@ fun string printGrid(int id, int targetIdx) {
 
 fun void updateClient(int z) {
   positions[z] @=> PlayerState curPlayer; 
-  printPlayerState(z, curPlayer);
+ // printPlayerState(z, curPlayer);
 
   // start the message...
   //id midi h s v grid a d s r
