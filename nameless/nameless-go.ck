@@ -105,6 +105,26 @@ if ((host == "l") || (host == "local")) {
 // aim the transmitter at port
 xmit.setHost ( host, port );
 
+/************************************************************** SOUND GLOBALS */
+
+Gain globalG => NRev r => dac;
+//LPF globalLPF => Gain globalG => NRev r => dac;
+// globalLPF.freq(1000);
+r.mix(0.1);
+globalG.gain(0.8);
+
+//global tinkler outgraph
+ResonZ tinklerZ => globalG;
+
+Gain redGain, blueGain, greenGain, whiteGain;
+0.5 => redGain.gain => blueGain.gain => greenGain.gain;
+0.2 => whiteGain.gain;
+
+redGain => globalG;
+blueGain => globalG;
+greenGain => globalG;
+whiteGain => globalG;
+
 /******************************************************************** Network */
 
 recv.event( "/slork/synch/clock, i i" ) @=> OscEvent ce;
@@ -368,25 +388,36 @@ fun void bassMonitor()
   }
 }
 
-/*********************************************************** Sound Production */
+fun void knobMonitor()
+{
+  recv.event( "/slork/synch/knob, i i") @=> OscEvent ke;
 
-Gain globalG => NRev r => dac;
-//LPF globalLPF => Gain globalG => NRev r => dac;
-// globalLPF.freq(1000);
-r.mix(0.1);
-globalG.gain(0.8);
+  while (true)
+  {
+    ke => now;
 
-//global tinkler outgraph
-ResonZ tinklerZ => globalG;
+    if (ke.nextMsg() != 0)
+    {
+      ke.getInt() => int which;
+      ke.getInt() => int value;
 
-Gain redGain, blueGain, greenGain, whiteGain;
-0.5 => redGain.gain => blueGain.gain => greenGain.gain;
-0.2 => whiteGain.gain;
+      //volume
+      if (which == 1)
+      {
+        (value $ float) / 100 => globalG.gain;
+      }
 
-redGain => globalG;
-blueGain => globalG;
-greenGain => globalG;
-whiteGain => globalG;
+      if (which == 5)
+      {
+        (value $ float) / 100 => r.mix;
+      }
+
+      //<<< "KNOB IN FLUX", r.mix(), globalG.gain() >>>;
+    }
+  }
+}
+
+/*********************************************************** SOUND PRODUCTION */
 
 fun void adjustOsc() {
   (h $ float ) / 120 => float oscBalance;
@@ -695,6 +726,7 @@ fun void bass(int note)
 netinit();
 spork ~clockMonitor();
 spork ~bassMonitor();
+spork ~knobMonitor();
 spork ~stateMonitor();
 spork ~network();
 spork ~xmitHeartbeat();

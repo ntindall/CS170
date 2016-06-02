@@ -392,6 +392,18 @@ fun void sendBass(int midiNote) {
   }
 }
 
+fun void sendKnob(int whichKnob, int value)
+{
+  if (value > 100) 100 => value;
+
+  for (int z; z < xmit.targets(); z++)
+  {
+    xmit.at(z).startMsg( "/slork/synch/knob", "i i");
+    whichKnob => xmit.at(z).addInt;
+    value     => xmit.at(z).addInt;
+  }
+}
+
 
 fun void updateClients() {
   for( 0 => int z; z < xmit.targets(); z++ ) 
@@ -864,6 +876,7 @@ fun void keyboard()
   }
 }
 
+
 fun void midi()
 {
   // the message
@@ -886,6 +899,12 @@ fun void midi()
       {
         //data 2 contains MIDI number
         spork ~sendBass(msg.data2);
+      }
+
+      //knob
+      if (msg.data1 == 176)
+      {
+        spork ~sendKnob(msg.data2, msg.data3);
       }
     }
   }
